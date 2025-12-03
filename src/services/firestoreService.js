@@ -49,11 +49,28 @@ export const getUserData = async (userId) => {
 export const subscribeToUserData = (userId, callback) => {
     const docRef = getUserDocRef(userId);
     
-    return onSnapshot(docRef, (docSnap) => {
+    return onSnapshot(docRef, async (docSnap) => {
         if (docSnap.exists()) {
             callback({ data: docSnap.data(), error: null });
         } else {
-            callback({ data: null, error: "No data found" });
+            // ドキュメントが存在しない場合、初期データを作成
+            console.log("Creating initial user data for:", userId);
+            const initialData = {
+                entries: [],
+                customPersonas: [],
+                selectedPersonas: ['teacher', 'friend'],
+                hiddenPersonaIds: [],
+                personaOrder: [],
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            };
+            try {
+                await setDoc(docRef, initialData);
+                // setDoc後、onSnapshotが再度トリガーされるので、ここではcallbackを呼ばない
+            } catch (error) {
+                console.error("Error creating initial user data:", error);
+                callback({ data: null, error: error.message });
+            }
         }
     }, (error) => {
         console.error("Error subscribing to user data:", error);
