@@ -5,3 +5,4 @@ export { PersonaSelector } from './PersonaSelector';
 export { AddPersonaModal } from './AddPersonaModal';
 export { EntryItem } from './EntryItem';
 export { SettingsModal } from './SettingsModal';
+export { LoginScreen } from './LoginScreen';

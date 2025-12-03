@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Settings, Key, Database, Users, UserPlus, ChevronRight, Download, Trash2, AlertTriangle, X, Eye, EyeOff, GripVertical, Plus } from 'lucide-react';
+import { Settings, Key, Database, Users, UserPlus, ChevronRight, Download, Trash2, AlertTriangle, X, Eye, EyeOff, GripVertical, Plus, LogOut, User } from 'lucide-react';
 import { DEFAULT_PERSONAS } from '../constants/personas';
 import { 
     DndContext, 
@@ -115,7 +115,9 @@ export const SettingsModal = ({
     onTogglePersonaVisibility,
     onMovePersona,
     onReorderPersonas,
-    onAddPersona
+    onAddPersona,
+    user,
+    onSignOut
 }) => {
     const [key, setKey] = useState(savedKey || "");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -219,6 +221,19 @@ export const SettingsModal = ({
                         <span className="flex items-center gap-2">
                             <Database size={16} />
                             データ管理
+                        </span>
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('account')}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                            activeTab === 'account' 
+                                ? 'border-indigo-500 text-indigo-600' 
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                    >
+                        <span className="flex items-center gap-2">
+                            <User size={16} />
+                            アカウント
                         </span>
                     </button>
                 </div>
@@ -412,7 +427,58 @@ export const SettingsModal = ({
                         )}
 
                         <p className="text-xs text-gray-400 mt-6 text-center">
-                            📱 データはこのブラウザにのみ保存されています
+                            ☁️ データはクラウドに保存され、どのデバイスからもアクセスできます
+                        </p>
+                    </div>
+                )}
+
+                {/* アカウントタブ */}
+                {activeTab === 'account' && (
+                    <div className="animate-fadeIn">
+                        {user && (
+                            <div className="bg-gray-50 rounded-xl p-5 mb-6">
+                                <div className="flex items-center gap-4 mb-4">
+                                    {user.photoURL ? (
+                                        <img 
+                                            src={user.photoURL} 
+                                            alt={user.displayName}
+                                            className="w-14 h-14 rounded-full border-2 border-white shadow-md"
+                                        />
+                                    ) : (
+                                        <div className="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center">
+                                            <User size={24} className="text-indigo-500" />
+                                        </div>
+                                    )}
+                                    <div>
+                                        <div className="font-semibold text-gray-800">{user.displayName || 'ユーザー'}</div>
+                                        <div className="text-sm text-gray-500">{user.email}</div>
+                                    </div>
+                                </div>
+                                <div className="text-xs text-gray-400 bg-white rounded-lg p-3">
+                                    <p>✅ Googleアカウントでログイン中</p>
+                                    <p className="mt-1">☁️ データはクラウドに自動保存されます</p>
+                                </div>
+                            </div>
+                        )}
+
+                        <button 
+                            onClick={() => {
+                                onCancel();
+                                onSignOut?.();
+                            }}
+                            className="w-full p-4 border-2 border-gray-200 rounded-xl text-left hover:bg-gray-50 transition-colors flex items-center gap-4"
+                        >
+                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <LogOut size={20} className="text-gray-600" />
+                            </div>
+                            <div>
+                                <div className="font-semibold text-gray-800">ログアウト</div>
+                                <div className="text-xs text-gray-500">別のアカウントに切り替えられます</div>
+                            </div>
+                        </button>
+
+                        <p className="text-xs text-gray-400 mt-6 text-center">
+                            🔐 ログアウトしてもデータは保持されます
                         </p>
                     </div>
                 )}

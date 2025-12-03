@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { 
     BookOpen, PenTool, Send, Sparkles, Loader2, 
-    Key, Settings, ChevronRight, Edit3 
+    Key, Settings, ChevronRight, Edit3, LogOut 
 } from 'lucide-react';
 
 // Constants
@@ -10,21 +10,39 @@ import { DEFAULT_PERSONAS } from './constants/personas';
 
 // Services
 import { fetchGeminiPersonas } from './services/api';
+import { signInWithGoogle, signOut, subscribeToAuthChanges } from './services/authService';
+import { 
+    subscribeToUserData, 
+    updateEntries, 
+    updateCustomPersonas,
+    updateSelectedPersonas,
+    updateHiddenPersonaIds,
+    updatePersonaOrder,
+    updateGeminiApiKey,
+    deleteUserData 
+} from './services/firestoreService';
 
 // Components
 import { 
     PersonaSelector, 
     EntryItem, 
     SettingsModal, 
-    AddPersonaModal 
+    AddPersonaModal,
+    LoginScreen 
 } from './components';
 
 export default function App() {
+    // 認証状態
+    const [user, setUser] = useState(null);
+    const [authLoading, setAuthLoading] = useState(true);
+    const [authError, setAuthError] = useState(null);
+    
+    // データ状態
     const [entries, setEntries] = useState([]);
     const [inputText, setInputText] = useState("");
-    const [selectedPersonas, setSelectedPersonas] = useState([]);
+    const [selectedPersonas, setSelectedPersonas] = useState(['teacher', 'friend']);
     const [isWriting, setIsWriting] = useState(false);
-    const [view, setView] = useState('list'); // 'list' or 'new'
+    const [view, setView] = useState('list');
     
     // API Key State
     const [apiKey, setApiKey] = useState("");
@@ -36,11 +54,14 @@ export default function App() {
     // カスタムペルソナ
     const [customPersonas, setCustomPersonas] = useState([]);
     
-    // 非表示ペルソナID（デフォルトペルソナ用）
+    // 非表示ペルソナID
     const [hiddenPersonaIds, setHiddenPersonaIds] = useState([]);
     
-    // ペルソナの表示順序（IDの配列）
+    // ペルソナの表示順序
     const [personaOrder, setPersonaOrder] = useState([]);
+    
+    // データ読み込み状態
+    const [dataLoading, setDataLoading] = useState(false);
     
     // 全ペルソナ（デフォルト + カスタム）を順序通りに並べる
     const allPersonasRaw = [...DEFAULT_PERSONAS, ...customPersonas];
@@ -53,156 +74,137 @@ export default function App() {
     
     // 表示用ペルソナ（非表示を除外）
     const visiblePersonas = allPersonas.filter(p => !hiddenPersonaIds.includes(p.id));
-    
-    // 初期読み込み完了フラグ
-    const [isLoaded, setIsLoaded] = useState(false);
 
-    // Initialize logic - 読み込み
+    // 認証状態の監視
     useEffect(() => {
-        try {
-            // Load Entries
-            const savedEntries = localStorage.getItem('multiverse_diary_entries');
-            if (savedEntries) {
-                const parsed = JSON.parse(savedEntries);
-                if (Array.isArray(parsed)) {
-                    const validEntries = parsed.filter(entry => 
-                        entry && 
-                        typeof entry.id !== 'undefined' &&
-                        typeof entry.content === 'string' &&
-                        typeof entry.date === 'string' &&
-                        Array.isArray(entry.comments)
-                    );
-                    setEntries(validEntries);
-                }
-            }
-            
-            // Load API Key
-            const savedKey = localStorage.getItem('gemini_api_key');
-            if (savedKey && typeof savedKey === 'string') {
-                setApiKey(savedKey);
-            }
-            
-            // Load Custom Personas
-            const savedCustomPersonas = localStorage.getItem('multiverse_diary_custom_personas');
-            if (savedCustomPersonas) {
-                const parsed = JSON.parse(savedCustomPersonas);
-                if (Array.isArray(parsed)) {
-                    const validPersonas = parsed.filter(p =>
-                        p &&
-                        typeof p.id === 'string' &&
-                        typeof p.name === 'string' &&
-                        typeof p.role === 'string' &&
-                        typeof p.desc === 'string'
-                    );
-                    setCustomPersonas(validPersonas);
-                }
-            }
-            
-            // Load Selected Personas (前回選択したペルソナ)
-            const savedSelectedPersonas = localStorage.getItem('multiverse_diary_selected_personas');
-            if (savedSelectedPersonas) {
-                const parsed = JSON.parse(savedSelectedPersonas);
-                if (Array.isArray(parsed)) {
-                    setSelectedPersonas(parsed);
-                }
-            } else {
-                // デフォルト選択
-                setSelectedPersonas(['teacher', 'friend']);
-            }
-            
-            // Load Hidden Persona IDs
-            const savedHiddenIds = localStorage.getItem('multiverse_diary_hidden_personas');
-            if (savedHiddenIds) {
-                const parsed = JSON.parse(savedHiddenIds);
-                if (Array.isArray(parsed)) {
-                    setHiddenPersonaIds(parsed);
-                }
-            }
-            
-            // Load Persona Order
-            const savedOrder = localStorage.getItem('multiverse_diary_persona_order');
-            if (savedOrder) {
-                const parsed = JSON.parse(savedOrder);
-                if (Array.isArray(parsed)) {
-                    setPersonaOrder(parsed);
-                }
-            }
-        } catch (e) {
-            console.error("Failed to load data", e);
-            localStorage.removeItem('multiverse_diary_entries');
-        }
-        setIsLoaded(true);
+        const unsubscribe = subscribeToAuthChanges((authUser) => {
+            setUser(authUser);
+            setAuthLoading(false);
+        });
+        return () => unsubscribe();
     }, []);
 
-    // Save Entries
+    // ユーザーデータのリアルタイム同期
     useEffect(() => {
-        if (!isLoaded) return;
-        try {
-            localStorage.setItem('multiverse_diary_entries', JSON.stringify(entries));
-        } catch (e) { console.error("Failed to save entries", e); }
-    }, [entries, isLoaded]);
-    
-    // Save Custom Personas
-    useEffect(() => {
-        if (!isLoaded) return;
-        try {
-            localStorage.setItem('multiverse_diary_custom_personas', JSON.stringify(customPersonas));
-        } catch (e) { console.error("Failed to save custom personas", e); }
-    }, [customPersonas, isLoaded]);
-    
-    // Save Selected Personas
-    useEffect(() => {
-        if (!isLoaded) return;
-        try {
-            localStorage.setItem('multiverse_diary_selected_personas', JSON.stringify(selectedPersonas));
-        } catch (e) { console.error("Failed to save selected personas", e); }
-    }, [selectedPersonas, isLoaded]);
-    
-    // Save Hidden Persona IDs
-    useEffect(() => {
-        if (!isLoaded) return;
-        try {
-            localStorage.setItem('multiverse_diary_hidden_personas', JSON.stringify(hiddenPersonaIds));
-        } catch (e) { console.error("Failed to save hidden personas", e); }
-    }, [hiddenPersonaIds, isLoaded]);
-    
-    // Save Persona Order
-    useEffect(() => {
-        if (!isLoaded) return;
-        try {
-            localStorage.setItem('multiverse_diary_persona_order', JSON.stringify(personaOrder));
-        } catch (e) { console.error("Failed to save persona order", e); }
-    }, [personaOrder, isLoaded]);
+        if (!user) {
+            // ログアウト時にデータをリセット
+            setEntries([]);
+            setCustomPersonas([]);
+            setSelectedPersonas(['teacher', 'friend']);
+            setHiddenPersonaIds([]);
+            setPersonaOrder([]);
+            setApiKey("");
+            return;
+        }
 
-    const handleSaveKey = (key) => {
+        setDataLoading(true);
+        
+        const unsubscribe = subscribeToUserData(user.uid, ({ data, error }) => {
+            if (error) {
+                console.error("Data sync error:", error);
+                setDataLoading(false);
+                return;
+            }
+            
+            if (data) {
+                setEntries(data.entries || []);
+                setCustomPersonas(data.customPersonas || []);
+                setSelectedPersonas(data.selectedPersonas || ['teacher', 'friend']);
+                setHiddenPersonaIds(data.hiddenPersonaIds || []);
+                setPersonaOrder(data.personaOrder || []);
+                setApiKey(data.geminiApiKey || "");
+            }
+            setDataLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [user]);
+
+    // Googleログイン処理
+    const handleGoogleSignIn = async () => {
+        setAuthError(null);
+        setAuthLoading(true);
+        const { user: authUser, error } = await signInWithGoogle();
+        if (error) {
+            setAuthError(error);
+        }
+        setAuthLoading(false);
+    };
+
+    // ログアウト処理
+    const handleSignOut = async () => {
+        if (window.confirm("ログアウトしますか？")) {
+            await signOut();
+        }
+    };
+
+    // APIキーの保存
+    const handleSaveKey = async (key) => {
         setApiKey(key);
-        localStorage.setItem('gemini_api_key', key);
+        if (user) {
+            await updateGeminiApiKey(user.uid, key);
+        }
         setShowSettings(false);
     };
     
-    const handleAddCustomPersona = (newPersona) => {
-        setCustomPersonas(prev => [...prev, newPersona]);
-    };
-    
-    const handleDeleteCustomPersona = (personaId) => {
-        setCustomPersonas(prev => prev.filter(p => p.id !== personaId));
-        setSelectedPersonas(prev => prev.filter(id => id !== personaId));
-        setPersonaOrder(prev => prev.filter(id => id !== personaId));
-    };
-    
-    const handleTogglePersonaVisibility = (personaId) => {
-        setHiddenPersonaIds(prev => 
-            prev.includes(personaId) 
-                ? prev.filter(id => id !== personaId)
-                : [...prev, personaId]
-        );
-        // 非表示にしたペルソナは選択解除
-        if (!hiddenPersonaIds.includes(personaId)) {
-            setSelectedPersonas(prev => prev.filter(id => id !== personaId));
+    // エントリの更新（Firestoreに保存）
+    const saveEntries = async (newEntries) => {
+        setEntries(newEntries);
+        if (user) {
+            await updateEntries(user.uid, newEntries);
         }
     };
     
-    const handleMovePersona = (personaId, direction) => {
+    // カスタムペルソナの追加
+    const handleAddCustomPersona = async (newPersona) => {
+        const newCustomPersonas = [...customPersonas, newPersona];
+        setCustomPersonas(newCustomPersonas);
+        if (user) {
+            await updateCustomPersonas(user.uid, newCustomPersonas);
+        }
+    };
+    
+    // カスタムペルソナの削除
+    const handleDeleteCustomPersona = async (personaId) => {
+        const newCustomPersonas = customPersonas.filter(p => p.id !== personaId);
+        const newSelectedPersonas = selectedPersonas.filter(id => id !== personaId);
+        const newPersonaOrder = personaOrder.filter(id => id !== personaId);
+        
+        setCustomPersonas(newCustomPersonas);
+        setSelectedPersonas(newSelectedPersonas);
+        setPersonaOrder(newPersonaOrder);
+        
+        if (user) {
+            await updateCustomPersonas(user.uid, newCustomPersonas);
+            await updateSelectedPersonas(user.uid, newSelectedPersonas);
+            await updatePersonaOrder(user.uid, newPersonaOrder);
+        }
+    };
+    
+    // ペルソナの表示/非表示切り替え
+    const handleTogglePersonaVisibility = async (personaId) => {
+        const newHiddenIds = hiddenPersonaIds.includes(personaId)
+            ? hiddenPersonaIds.filter(id => id !== personaId)
+            : [...hiddenPersonaIds, personaId];
+        
+        setHiddenPersonaIds(newHiddenIds);
+        
+        // 非表示にしたペルソナは選択解除
+        if (!hiddenPersonaIds.includes(personaId)) {
+            const newSelectedPersonas = selectedPersonas.filter(id => id !== personaId);
+            setSelectedPersonas(newSelectedPersonas);
+            if (user) {
+                await updateSelectedPersonas(user.uid, newSelectedPersonas);
+            }
+        }
+        
+        if (user) {
+            await updateHiddenPersonaIds(user.uid, newHiddenIds);
+        }
+    };
+    
+    // ペルソナの並び替え（上下）
+    const handleMovePersona = async (personaId, direction) => {
         const currentOrder = personaOrder.length > 0 
             ? personaOrder 
             : allPersonasRaw.map(p => p.id);
@@ -214,21 +216,26 @@ export default function App() {
         
         const newOrder = [...currentOrder];
         [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
+        
         setPersonaOrder(newOrder);
+        if (user) {
+            await updatePersonaOrder(user.uid, newOrder);
+        }
     };
     
     // ドラッグ＆ドロップによる並び替え
-    const handleReorderPersonas = (newOrderIds) => {
+    const handleReorderPersonas = async (newOrderIds) => {
         setPersonaOrder(newOrderIds);
+        if (user) {
+            await updatePersonaOrder(user.uid, newOrderIds);
+        }
     };
     
-    const handleClearAllData = () => {
-        localStorage.removeItem('multiverse_diary_entries');
-        localStorage.removeItem('gemini_api_key');
-        localStorage.removeItem('multiverse_diary_custom_personas');
-        localStorage.removeItem('multiverse_diary_selected_personas');
-        localStorage.removeItem('multiverse_diary_hidden_personas');
-        localStorage.removeItem('multiverse_diary_persona_order');
+    // 全データ削除
+    const handleClearAllData = async () => {
+        if (user) {
+            await deleteUserData(user.uid);
+        }
         setEntries([]);
         setApiKey("");
         setCustomPersonas([]);
@@ -255,14 +262,20 @@ export default function App() {
         URL.revokeObjectURL(url);
     };
 
-    const togglePersona = (id) => {
-        setSelectedPersonas(prev => 
-            prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
-        );
+    const togglePersona = async (id) => {
+        const newSelectedPersonas = selectedPersonas.includes(id) 
+            ? selectedPersonas.filter(p => p !== id) 
+            : [...selectedPersonas, id];
+        
+        setSelectedPersonas(newSelectedPersonas);
+        if (user) {
+            await updateSelectedPersonas(user.uid, newSelectedPersonas);
+        }
     };
 
-    const handleUpdateEntry = (id, updatedEntry) => {
-        setEntries(entries.map(e => e.id === id ? updatedEntry : e));
+    const handleUpdateEntry = async (id, updatedEntry) => {
+        const newEntries = entries.map(e => e.id === id ? updatedEntry : e);
+        await saveEntries(newEntries);
     };
 
     const handleSubmit = async () => {
@@ -296,17 +309,52 @@ export default function App() {
             comments: newComments
         };
 
-        setEntries([newEntry, ...entries]);
+        await saveEntries([newEntry, ...entries]);
         setInputText("");
         setIsWriting(false);
         setView('list');
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm("この日記を削除しますか？")) {
-            setEntries(entries.filter(e => e.id !== id));
+            await saveEntries(entries.filter(e => e.id !== id));
         }
     };
+
+    // ローディング画面
+    if (authLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 size={40} className="animate-spin text-indigo-500 mx-auto mb-4" />
+                    <p className="text-gray-500">読み込み中...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // ログイン画面
+    if (!user) {
+        return (
+            <LoginScreen 
+                onGoogleSignIn={handleGoogleSignIn}
+                isLoading={authLoading}
+                error={authError}
+            />
+        );
+    }
+
+    // データ読み込み中
+    if (dataLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 size={40} className="animate-spin text-indigo-500 mx-auto mb-4" />
+                    <p className="text-gray-500">データを同期中...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen pb-16">
@@ -321,7 +369,17 @@ export default function App() {
                         <span className="app-logo">Multiverse Diary</span>
                     </h1>
                     
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
+                        {/* ユーザーアバター */}
+                        {user.photoURL && (
+                            <img 
+                                src={user.photoURL} 
+                                alt={user.displayName}
+                                className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                                title={user.displayName}
+                            />
+                        )}
+                        
                         <button 
                             onClick={() => setShowSettings(true)}
                             className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl transition-all ${
@@ -329,7 +387,7 @@ export default function App() {
                                     ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100' 
                                     : 'text-white bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg animate-pulse'
                             }`}
-                            title="APIキー設定"
+                            title="設定"
                         >
                             <Settings size={20} className="sm:w-[22px] sm:h-[22px]" />
                         </button>
@@ -487,6 +545,8 @@ export default function App() {
                     onMovePersona={handleMovePersona}
                     onReorderPersonas={handleReorderPersonas}
                     onAddPersona={() => setShowAddPersonaModal(true)}
+                    user={user}
+                    onSignOut={handleSignOut}
                 />
             )}
 
