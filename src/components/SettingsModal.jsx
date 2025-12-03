@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Settings, Key, Database, Users, UserPlus, ChevronRight, Download, Trash2, AlertTriangle, X, Eye, EyeOff, GripVertical } from 'lucide-react';
+import { Settings, Key, Database, Users, UserPlus, ChevronRight, Download, Trash2, AlertTriangle, X, Eye, EyeOff, GripVertical, Plus } from 'lucide-react';
 import { DEFAULT_PERSONAS } from '../constants/personas';
 import { 
     DndContext, 
@@ -114,7 +114,8 @@ export const SettingsModal = ({
     hiddenPersonaIds,
     onTogglePersonaVisibility,
     onMovePersona,
-    onReorderPersonas
+    onReorderPersonas,
+    onAddPersona
 }) => {
     const [key, setKey] = useState(savedKey || "");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -308,13 +309,23 @@ export const SettingsModal = ({
                         
                         <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                             <p className="text-xs text-blue-600">
-                                💡 非表示にしたキャラクターは日記作成画面に表示されませんが、過去の日記のコメントはそのまま残ります。
+                                💡 ドラッグで順番を変更できます。非表示にしたキャラクターは日記作成画面に表示されませんが、過去の日記のコメントはそのまま残ります。
                             </p>
                         </div>
 
-                        <div className="mt-6 pt-4 border-t border-gray-100">
-                            <button onClick={onCancel} className="btn-secondary w-full">
+                        <div className="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
+                            <button onClick={onCancel} className="btn-secondary flex-1 order-2 sm:order-1">
                                 閉じる
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    onCancel();
+                                    onAddPersona?.();
+                                }} 
+                                className="btn-primary flex-1 order-1 sm:order-2"
+                            >
+                                <Plus size={18} />
+                                キャラクターを追加
                             </button>
                         </div>
                     </div>

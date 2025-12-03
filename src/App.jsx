@@ -486,6 +486,7 @@ export default function App() {
                     onTogglePersonaVisibility={handleTogglePersonaVisibility}
                     onMovePersona={handleMovePersona}
                     onReorderPersonas={handleReorderPersonas}
+                    onAddPersona={() => setShowAddPersonaModal(true)}
                 />
             )}
 
