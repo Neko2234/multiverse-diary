@@ -193,12 +193,12 @@ const AnalysisSection = ({ analysis, onClose }) => (
 );
 
 const PersonaSelector = ({ selected, togglePersona }) => (
-    <div className="mb-6">
-        <h3 className="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-2">
-            <MessageCircle size={16} className="text-indigo-500" />
+    <div className="mb-8">
+        <h3 className="text-base font-semibold text-gray-700 mb-4 flex items-center gap-2">
+            <MessageCircle size={20} className="text-indigo-500" />
             誰からコメントをもらう？
         </h3>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-3">
             {PERSONAS.map(p => {
                 const isSelected = selected.includes(p.id);
                 return (
@@ -240,57 +240,62 @@ const EntryItem = ({ entry, onDelete, onUpdate, apiKey }) => {
     };
 
     return (
-        <div className="diary-card p-6 sm:p-8 mb-6 animate-slideUp">
-            {/* ヘッダー */}
-            <div className="flex justify-between items-center mb-5 pb-4 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
-                        <Calendar size={18} className="text-indigo-500" />
+        <div className="entry-wrapper mb-10 animate-slideUp">
+            {/* 日記本体カード */}
+            <div className="diary-card p-6 sm:p-8">
+                {/* ヘッダー */}
+                <div className="flex justify-between items-center mb-6 pb-5 border-b-2 border-gray-100">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
+                            <Calendar size={22} className="text-indigo-500" />
+                        </div>
+                        <div>
+                            <span className="text-gray-800 text-base font-semibold">{entry.date}</span>
+                        </div>
                     </div>
-                    <div>
-                        <span className="text-gray-800 text-sm font-medium">{entry.date}</span>
-                    </div>
-                </div>
-                <button 
-                    onClick={() => onDelete(entry.id)} 
-                    className="text-gray-300 hover:text-red-400 transition-colors p-2 rounded-xl hover:bg-red-50"
-                    title="削除"
-                >
-                    <Trash2 size={18} />
-                </button>
-            </div>
-            
-            {/* 本文 */}
-            <div className="mb-6">
-                <p className="text-gray-800 whitespace-pre-wrap leading-relaxed text-base">{entry.content}</p>
-            </div>
-
-            {/* Analysis Button or Section */}
-            {entry.analysis ? (
-                <AnalysisSection analysis={entry.analysis} onClose={clearAnalysis} />
-            ) : (
-                <div className="mb-4 flex justify-end">
                     <button 
-                        onClick={handleAnalysis}
-                        disabled={analyzing}
-                        className="text-sm font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-xl transition-all flex items-center gap-2 hover:shadow-sm"
+                        onClick={() => onDelete(entry.id)} 
+                        className="text-gray-300 hover:text-red-400 transition-colors p-2.5 rounded-xl hover:bg-red-50"
+                        title="削除"
                     >
-                        {analyzing ? <Loader2 size={16} className="animate-spin" /> : <BrainCircuit size={16} />}
-                        {analyzing ? '分析中...' : 'AI感情分析'}
+                        <Trash2 size={20} />
                     </button>
                 </div>
-            )}
+                
+                {/* 本文 */}
+                <div className="mb-6">
+                    <p className="text-gray-800 whitespace-pre-wrap leading-loose text-base sm:text-lg">{entry.content}</p>
+                </div>
 
-            {/* コメントセクション */}
-            <div className="comments-section">
-                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Heart size={14} className="text-pink-400" />
+                {/* Analysis Button or Section */}
+                {entry.analysis ? (
+                    <AnalysisSection analysis={entry.analysis} onClose={clearAnalysis} />
+                ) : (
+                    <div className="flex justify-end">
+                        <button 
+                            onClick={handleAnalysis}
+                            disabled={analyzing}
+                            className="text-sm font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 hover:shadow-sm"
+                        >
+                            {analyzing ? <Loader2 size={18} className="animate-spin" /> : <BrainCircuit size={18} />}
+                            {analyzing ? '分析中...' : 'AI感情分析'}
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* コメントセクション - カードの外、階層構造で表示 */}
+            <div className="comments-wrapper mt-4 ml-6 sm:ml-10 pl-6 sm:pl-8 border-l-4 border-indigo-200">
+                <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-5 flex items-center gap-2">
+                    <Heart size={16} className="text-pink-400" />
                     みんなからのコメント
                 </h4>
-                {entry.comments.map((c, i) => {
-                    const persona = PERSONAS.find(p => p.id === c.personaId);
-                    return persona ? <CommentCard key={i} persona={persona} text={c.text} index={i} /> : null;
-                })}
+                <div className="space-y-4">
+                    {entry.comments.map((c, i) => {
+                        const persona = PERSONAS.find(p => p.id === c.personaId);
+                        return persona ? <CommentCard key={i} persona={persona} text={c.text} index={i} /> : null;
+                    })}
+                </div>
             </div>
         </div>
     );
@@ -477,15 +482,15 @@ export default function App() {
     };
 
     return (
-        <div className="min-h-screen pb-12">
+        <div className="min-h-screen pb-16">
             {/* Header */}
-            <header className="app-header py-4 px-4 sm:py-5 sticky top-0 z-10">
-                <div className="max-w-2xl mx-auto flex justify-between items-center">
+            <header className="app-header py-5 px-5 sm:py-6 sm:px-8 sticky top-0 z-10">
+                <div className="max-w-3xl mx-auto flex justify-between items-center">
                     <h1 
-                        className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2 sm:gap-3 cursor-pointer" 
+                        className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-3 sm:gap-4 cursor-pointer" 
                         onClick={() => setView('list')}
                     >
-                        <span className="text-2xl sm:text-3xl">🌌</span> 
+                        <span className="text-3xl sm:text-4xl">🌌</span> 
                         <span className="app-logo">Multiverse Diary</span>
                     </h1>
                     
@@ -493,22 +498,22 @@ export default function App() {
                          {/* Settings Button */}
                         <button 
                             onClick={() => setShowSettings(true)}
-                            className={`p-2.5 rounded-xl transition-all ${
+                            className={`p-3 rounded-xl transition-all ${
                                 apiKey 
                                     ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100' 
                                     : 'text-white bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg animate-pulse'
                             }`}
                             title="APIキー設定"
                         >
-                            <Settings size={20} />
+                            <Settings size={24} />
                         </button>
 
                         {view === 'list' && (
                             <button 
                                 onClick={() => setView('new')}
-                                className="btn-primary !py-2.5 !px-4 sm:!px-5"
+                                className="btn-primary !py-3 !px-5 sm:!px-6"
                             >
-                                <PenTool size={18} />
+                                <PenTool size={20} />
                                 <span className="hidden sm:inline">日記を書く</span>
                             </button>
                         )}
@@ -524,32 +529,34 @@ export default function App() {
                 </div>
             </header>
 
-            <main className="max-w-2xl mx-auto px-4 pt-6">
+            <main className="max-w-3xl mx-auto px-5 sm:px-8 pt-8 sm:pt-10">
                 {/* Warning Banner if no Key */}
                 {!apiKey && view === 'list' && (
                     <div 
                         onClick={() => setShowSettings(true)} 
-                        className="api-banner text-white p-5 mb-8 cursor-pointer flex items-center justify-between gap-4"
+                        className="api-banner text-white p-6 mb-10 cursor-pointer flex items-center justify-between gap-4"
                     >
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                                <Key size={24} />
+                            <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+                                <Key size={28} />
                             </div>
                             <div>
-                                <div className="font-bold text-base">APIキーを設定しよう</div>
+                                <div className="font-bold text-lg">APIキーを設定しよう</div>
                                 <div className="text-sm text-white/80">タップしてGemini APIキーを入力</div>
                             </div>
                         </div>
-                        <ChevronRight size={24} className="text-white/60" />
+                        <ChevronRight size={28} className="text-white/60" />
                     </div>
                 )}
 
                 {/* New Entry View */}
                 {view === 'new' && (
                     <div className="animate-slideUp">
-                        <div className="diary-card p-6 sm:p-8">
-                            <label className="block text-gray-800 font-semibold mb-4 text-lg flex items-center gap-2">
-                                <Edit3 size={20} className="text-indigo-500" />
+                        <div className="diary-card p-6 sm:p-10">
+                            <label className="block text-gray-800 font-bold mb-5 text-xl flex items-center gap-3">
+                                <span className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
+                                    <Edit3 size={22} className="text-indigo-500" />
+                                </span>
                                 今日の出来事は？
                             </label>
                             <textarea
@@ -591,10 +598,10 @@ export default function App() {
                         {entries.length === 0 ? (
                             <div className="empty-state text-center animate-fadeIn">
                                 <div className="empty-state-icon">
-                                    <BookOpen size={36} strokeWidth={1.5} />
+                                    <BookOpen size={44} strokeWidth={1.5} />
                                 </div>
-                                <h2 className="text-xl font-bold text-gray-800 mb-3">まだ日記がありません</h2>
-                                <p className="text-gray-500 mb-8 text-sm leading-relaxed max-w-xs mx-auto">
+                                <h2 className="text-2xl font-bold text-gray-800 mb-4">まだ日記がありません</h2>
+                                <p className="text-gray-500 mb-10 text-base leading-relaxed max-w-sm mx-auto">
                                     今日あったことを書いて、<br/>
                                     AIキャラクターたちからコメントをもらいましょう
                                 </p>
@@ -602,7 +609,7 @@ export default function App() {
                                     onClick={() => setView('new')}
                                     className="btn-primary"
                                 >
-                                    <Edit3 size={18} />
+                                    <Edit3 size={20} />
                                     最初の日記を書く
                                 </button>
                             </div>

@@ -2,10 +2,10 @@
 
 /* ヘッダー */
 .app-header {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.92));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 /* ロゴ */
@@ -17,64 +17,89 @@
   background-clip: text;
 }
 
+/* 日記エントリラッパー */
+.entry-wrapper {
+  position: relative;
+}
+
 /* 日記カード */
 .diary-card {
   background: white;
-  border-radius: 20px;
+  border-radius: 24px;
   box-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.04),
-    0 4px 12px rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+    0 2px 4px rgba(0, 0, 0, 0.02),
+    0 4px 16px rgba(0, 0, 0, 0.04),
+    0 8px 32px rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 
 .diary-card:hover {
   box-shadow: 
     0 4px 8px rgba(0, 0, 0, 0.04),
-    0 12px 24px rgba(0, 0, 0, 0.06);
-  transform: translateY(-2px);
+    0 12px 32px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+}
+
+/* コメントラッパー - 階層構造を表現 */
+.comments-wrapper {
+  position: relative;
+}
+
+.comments-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -2px;
+  width: 8px;
+  height: 8px;
+  background: #818cf8;
+  border-radius: 50%;
+  transform: translateX(-50%);
 }
 
 /* コメントバブル */
 .comment-bubble {
   background: white;
-  border-radius: 0 18px 18px 18px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 4px 20px 20px 20px;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 4px 16px rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 /* アバター */
 .persona-avatar {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 1.6rem;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
   flex-shrink: 0;
 }
 
 /* ペルソナ選択ボタン */
 .persona-btn {
-  padding: 8px 16px;
-  border-radius: 24px;
-  font-size: 0.875rem;
+  padding: 10px 18px;
+  border-radius: 28px;
+  font-size: 0.95rem;
   font-weight: 500;
   border: 2px solid transparent;
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .persona-btn-active {
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
   border-color: transparent;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-  transform: scale(1.02);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  transform: scale(1.03);
 }
 
 .persona-btn-inactive {
@@ -94,19 +119,20 @@
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
   font-weight: 600;
-  padding: 14px 28px;
-  border-radius: 14px;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+  font-size: 1rem;
+  padding: 16px 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.45);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -125,8 +151,8 @@
   background: white;
   color: #6366f1;
   font-weight: 600;
-  padding: 12px 24px;
-  border-radius: 12px;
+  padding: 14px 28px;
+  border-radius: 14px;
   border: 2px solid #e5e7eb;
   transition: all 0.2s ease;
   display: inline-flex;
@@ -142,12 +168,12 @@
 /* 入力フィールド */
 .textarea-diary {
   width: 100%;
-  min-height: 180px;
-  padding: 20px;
+  min-height: 200px;
+  padding: 24px;
   border: 2px solid #e5e7eb;
-  border-radius: 16px;
-  font-size: 1.05rem;
-  line-height: 1.8;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  line-height: 1.9;
   background: #fafaf9;
   transition: all 0.3s ease;
 }
@@ -155,7 +181,7 @@
 .textarea-diary:focus {
   border-color: #6366f1;
   background: white;
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.1);
 }
 
 .textarea-diary::placeholder {
@@ -165,22 +191,23 @@
 /* 分析セクション */
 .analysis-section {
   background: linear-gradient(135deg, #f5f3ff 0%, #fdf4ff 50%, #fff1f2 100%);
-  border-radius: 16px;
-  border: 1px solid rgba(139, 92, 246, 0.1);
+  border-radius: 20px;
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  margin-top: 24px;
 }
 
 /* 空状態 */
 .empty-state {
   background: white;
-  border: 2px dashed #e5e7eb;
-  border-radius: 24px;
-  padding: 48px 24px;
+  border: 3px dashed #e5e7eb;
+  border-radius: 28px;
+  padding: 64px 32px;
 }
 
 .empty-state-icon {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 24px;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 28px;
   background: linear-gradient(135deg, #f5f3ff 0%, #fdf4ff 100%);
   border-radius: 50%;
   display: flex;
@@ -191,79 +218,79 @@
 
 /* モーダル */
 .modal-overlay {
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .modal-content {
   background: white;
-  border-radius: 24px;
+  border-radius: 28px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  max-width: 440px;
-  width: calc(100% - 32px);
-  margin: 16px;
+  max-width: 480px;
+  width: calc(100% - 40px);
+  margin: 20px;
 }
 
 /* APIキーバナー */
 .api-banner {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 8px 28px rgba(99, 102, 241, 0.35);
   transition: all 0.3s ease;
 }
 
 .api-banner:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4);
-}
-
-/* コメントセクション */
-.comments-section {
-  background: linear-gradient(to bottom, #fafaf9, #f5f5f4);
-  border-top: 1px solid rgba(0, 0, 0, 0.04);
-  margin: 0 -24px -24px;
-  padding: 24px;
-  border-radius: 0 0 20px 20px;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(99, 102, 241, 0.45);
 }
 
 /* スマホ対応 */
 @media (max-width: 640px) {
   .diary-card {
-    border-radius: 16px;
-    margin: 0 -8px;
+    border-radius: 20px;
   }
   
   .persona-btn {
-    padding: 6px 12px;
-    font-size: 0.8rem;
+    padding: 8px 14px;
+    font-size: 0.875rem;
   }
   
   .btn-primary {
-    padding: 12px 20px;
+    padding: 14px 24px;
     width: 100%;
+    font-size: 0.95rem;
   }
   
   .textarea-diary {
-    min-height: 150px;
-    padding: 16px;
+    min-height: 160px;
+    padding: 18px;
     font-size: 1rem;
   }
   
   .modal-content {
-    border-radius: 20px;
-    margin: 12px;
+    border-radius: 24px;
+    margin: 16px;
   }
   
-  .comments-section {
-    margin: 0 -16px -16px;
-    padding: 16px;
+  .empty-state {
+    padding: 48px 24px;
+  }
+  
+  .empty-state-icon {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .comments-wrapper {
+    margin-left: 16px !important;
+    padding-left: 20px !important;
   }
 }
 
 /* タブレット対応 */
 @media (min-width: 641px) and (max-width: 1024px) {
   .diary-card {
-    border-radius: 20px;
+    border-radius: 24px;
   }
 }
