@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Settings, Key, Database, Users, UserPlus, ChevronRight, Download, Trash2, AlertTriangle, X, Eye, EyeOff, GripVertical, Plus, LogOut, User } from 'lucide-react';
+import { Settings, Key, Database, Users, UserPlus, ChevronRight, Download, Trash2, AlertTriangle, X, Eye, EyeOff, GripVertical, Plus, LogOut, User, Cpu } from 'lucide-react';
 import { DEFAULT_PERSONAS } from '../constants/personas';
+import { GEMINI_MODELS, getGeminiModel, saveGeminiModel } from '../services/api';
 import { 
     DndContext, 
     closestCenter, 
@@ -121,7 +122,14 @@ export const SettingsModal = ({
 }) => {
     const [key, setKey] = useState(savedKey || "");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [activeTab, setActiveTab] = useState('api'); // 'api', 'data', or 'personas'
+    const [activeTab, setActiveTab] = useState('api'); // 'api', 'data', 'personas', or 'account'
+    const [selectedModel, setSelectedModel] = useState(getGeminiModel());
+    
+    // モデル変更ハンドラ
+    const handleModelChange = (modelId) => {
+        setSelectedModel(modelId);
+        saveGeminiModel(modelId);
+    };
     
     // ドラッグ＆ドロップのセンサー設定
     const sensors = useSensors(
@@ -262,6 +270,46 @@ export const SettingsModal = ({
                             placeholder="AIzaSy..."
                             className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none mb-5 font-mono text-sm transition-all"
                         />
+                        
+                        {/* モデル選択 */}
+                        <div className="mb-5">
+                            <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                <Cpu size={16} className="text-indigo-500" />
+                                AIモデル
+                            </label>
+                            <div className="space-y-2">
+                                {Object.entries(GEMINI_MODELS).map(([id, model]) => (
+                                    <button
+                                        key={id}
+                                        onClick={() => handleModelChange(id)}
+                                        className={`w-full p-3 rounded-xl border-2 text-left transition-all ${
+                                            selectedModel === id
+                                                ? 'border-indigo-500 bg-indigo-50'
+                                                : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <div className={`font-medium ${selectedModel === id ? 'text-indigo-700' : 'text-gray-700'}`}>
+                                                    {model.name}
+                                                </div>
+                                                <div className="text-xs text-gray-500">{model.description}</div>
+                                            </div>
+                                            {selectedModel === id && (
+                                                <div className="w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center">
+                                                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                            <p className="text-xs text-gray-400 mt-2">
+                                💡 Flash: 高速で無料枠が大きい（1日1,500回）/ Pro: 高精度だが無料枠小（1日50回）
+                            </p>
+                        </div>
                         
                         <div className="flex flex-col sm:flex-row gap-3">
                             <button 

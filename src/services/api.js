@@ -1,5 +1,33 @@
 import { DEFAULT_PERSONAS } from '../constants/personas';
 
+// 利用可能なGeminiモデル
+export const GEMINI_MODELS = {
+    flash: {
+        id: 'gemini-2.5-flash-preview-05-20',
+        name: 'Gemini 2.5 Flash',
+        description: '高速・高精度（推奨）',
+        endpoint: 'gemini-2.5-flash-preview-05-20'
+    },
+    pro: {
+        id: 'gemini-2.5-pro-preview-06-05',
+        name: 'Gemini 2.5 Pro', 
+        description: '最高精度・無料枠小',
+        endpoint: 'gemini-2.5-pro-preview-06-05'
+    }
+};
+
+// デフォルトモデル
+export const DEFAULT_MODEL = 'flash';
+
+// モデル設定の保存・読み込み（ローカルストレージ）
+export const saveGeminiModel = (modelId) => {
+    localStorage.setItem('gemini_model', modelId);
+};
+
+export const getGeminiModel = () => {
+    return localStorage.getItem('gemini_model') || DEFAULT_MODEL;
+};
+
 // Fallback logic (Local) for when API fails
 const generateLocalResponse = (text, personaId) => {
     const t = text.toLowerCase();
@@ -23,9 +51,13 @@ const generateLocalResponse = (text, personaId) => {
 };
 
 // Gemini API Call for Personas
-export const fetchGeminiPersonas = async (apiKey, text, selectedIds, allPersonas) => {
+export const fetchGeminiPersonas = async (apiKey, text, selectedIds, allPersonas, modelId = null) => {
     const personaList = allPersonas || DEFAULT_PERSONAS;
     const selectedPersonas = personaList.filter(p => selectedIds.includes(p.id));
+    
+    // モデルの選択（引数で指定されていない場合はローカルストレージから取得）
+    const selectedModel = modelId || getGeminiModel();
+    const modelEndpoint = GEMINI_MODELS[selectedModel]?.endpoint || GEMINI_MODELS.flash.endpoint;
     
     const systemPrompt = `
     You are a roleplay AI.
@@ -42,7 +74,7 @@ export const fetchGeminiPersonas = async (apiKey, text, selectedIds, allPersonas
     `;
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelEndpoint}:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -82,7 +114,11 @@ export const fetchGeminiPersonas = async (apiKey, text, selectedIds, allPersonas
 };
 
 // Gemini API Call for Analysis
-export const fetchGeminiAnalysis = async (apiKey, text) => {
+export const fetchGeminiAnalysis = async (apiKey, text, modelId = null) => {
+    // モデルの選択
+    const selectedModel = modelId || getGeminiModel();
+    const modelEndpoint = GEMINI_MODELS[selectedModel]?.endpoint || GEMINI_MODELS.flash.endpoint;
+    
     const systemPrompt = `
     You are a psychological counselor and fortune teller.
     Analyze the user's diary entry and provide an "Emotional Insight" report.
@@ -99,7 +135,7 @@ export const fetchGeminiAnalysis = async (apiKey, text) => {
     `;
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelEndpoint}:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
