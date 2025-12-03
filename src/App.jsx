@@ -311,42 +311,42 @@ export default function App() {
     return (
         <div className="min-h-screen pb-16">
             {/* Header */}
-            <header className="app-header py-5 px-5 sm:py-6 sm:px-8 sticky top-0 z-10">
+            <header className="app-header py-3 px-4 sm:py-5 sm:px-8 sticky top-0 z-10">
                 <div className="max-w-3xl mx-auto flex justify-between items-center">
                     <h1 
-                        className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-3 sm:gap-4 cursor-pointer" 
+                        className="text-lg sm:text-2xl font-bold tracking-tight flex items-center gap-2 sm:gap-3 cursor-pointer" 
                         onClick={() => setView('list')}
                     >
-                        <span className="text-3xl sm:text-4xl">🌌</span> 
+                        <span className="text-2xl sm:text-3xl">🌌</span> 
                         <span className="app-logo">Multiverse Diary</span>
                     </h1>
                     
-                    <div className="flex gap-2 sm:gap-3">
+                    <div className="flex gap-2">
                         <button 
                             onClick={() => setShowSettings(true)}
-                            className={`p-3 rounded-xl transition-all ${
+                            className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl transition-all ${
                                 apiKey 
                                     ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100' 
                                     : 'text-white bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg animate-pulse'
                             }`}
                             title="APIキー設定"
                         >
-                            <Settings size={24} />
+                            <Settings size={20} className="sm:w-[22px] sm:h-[22px]" />
                         </button>
 
                         {view === 'list' && (
                             <button 
                                 onClick={() => setView('new')}
-                                className="btn-primary !py-3 !px-5 sm:!px-6"
+                                className="btn-primary !py-2 !px-3 sm:!py-2.5 sm:!px-5"
                             >
-                                <PenTool size={20} />
+                                <PenTool size={16} className="sm:w-[18px] sm:h-[18px]" />
                                 <span className="hidden sm:inline">日記を書く</span>
                             </button>
                         )}
                         {view === 'new' && (
                             <button 
                                 onClick={() => setView('list')}
-                                className="btn-secondary !py-2.5"
+                                className="btn-secondary !py-2"
                             >
                                 キャンセル
                             </button>
@@ -355,33 +355,33 @@ export default function App() {
                 </div>
             </header>
 
-            <main className="max-w-3xl mx-auto px-5 sm:px-8 pt-8 sm:pt-10">
+            <main className="max-w-3xl mx-auto px-4 sm:px-8 pt-6 sm:pt-10">
                 {/* Warning Banner if no Key */}
                 {!apiKey && view === 'list' && (
                     <div 
                         onClick={() => setShowSettings(true)} 
-                        className="api-banner text-white p-6 mb-10 cursor-pointer flex items-center justify-between gap-4"
+                        className="api-banner text-white p-4 sm:p-6 mb-6 sm:mb-10 cursor-pointer flex items-center justify-between gap-3 sm:gap-4"
                     >
-                        <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
-                                <Key size={28} />
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center">
+                                <Key size={20} className="sm:w-[24px] sm:h-[24px]" />
                             </div>
                             <div>
-                                <div className="font-bold text-lg">APIキーを設定しよう</div>
-                                <div className="text-sm text-white/80">タップしてGemini APIキーを入力</div>
+                                <div className="font-bold text-base sm:text-lg">APIキーを設定しよう</div>
+                                <div className="text-xs sm:text-sm text-white/80">タップしてGemini APIキーを入力</div>
                             </div>
                         </div>
-                        <ChevronRight size={28} className="text-white/60" />
+                        <ChevronRight size={24} className="text-white/60 sm:w-[28px] sm:h-[28px]" />
                     </div>
                 )}
 
                 {/* New Entry View */}
                 {view === 'new' && (
                     <div className="animate-slideUp">
-                        <div className="diary-card p-6 sm:p-10">
-                            <label className="block text-gray-800 font-bold mb-5 text-xl flex items-center gap-3">
-                                <span className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
-                                    <Edit3 size={22} className="text-indigo-500" />
+                        <div className="diary-card p-5 sm:p-8">
+                            <label className="block text-gray-800 font-bold mb-4 text-lg sm:text-xl flex items-center gap-2 sm:gap-3">
+                                <span className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg sm:rounded-xl flex items-center justify-center">
+                                    <Edit3 size={18} className="text-indigo-500 sm:w-[20px] sm:h-[20px]" />
                                 </span>
                                 今日の出来事は？
                             </label>
@@ -433,10 +433,10 @@ export default function App() {
                         {entries.length === 0 ? (
                             <div className="empty-state text-center animate-fadeIn">
                                 <div className="empty-state-icon">
-                                    <BookOpen size={44} strokeWidth={1.5} />
+                                    <BookOpen size={32} className="sm:w-[40px] sm:h-[40px]" strokeWidth={1.5} />
                                 </div>
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4">まだ日記がありません</h2>
-                                <p className="text-gray-500 mb-10 text-base leading-relaxed max-w-sm mx-auto">
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">まだ日記がありません</h2>
+                                <p className="text-gray-500 mb-6 sm:mb-10 text-sm sm:text-base leading-relaxed max-w-sm mx-auto">
                                     今日あったことを書いて、<br/>
                                     AIキャラクターたちからコメントをもらいましょう
                                 </p>
@@ -444,7 +444,7 @@ export default function App() {
                                     onClick={() => setView('new')}
                                     className="btn-primary"
                                 >
-                                    <Edit3 size={20} />
+                                    <Edit3 size={18} />
                                     最初の日記を書く
                                 </button>
                             </div>
