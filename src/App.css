@@ -1,42 +1,269 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Multiverse Diary - App Styles */
+
+/* ヘッダー */
+.app-header {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* ロゴ */
+.app-logo {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+/* 日記カード */
+.diary-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.diary-card:hover {
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.04),
+    0 12px 24px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+/* コメントバブル */
+.comment-bubble {
+  background: white;
+  border-radius: 0 18px 18px 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+/* アバター */
+.persona-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+/* ペルソナ選択ボタン */
+.persona-btn {
+  padding: 8px 16px;
+  border-radius: 24px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.persona-btn-active {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  transform: scale(1.02);
+}
+
+.persona-btn-inactive {
+  background: white;
+  color: #4b5563;
+  border-color: #e5e7eb;
+}
+
+.persona-btn-inactive:hover {
+  border-color: #6366f1;
+  color: #6366f1;
+  background: #f5f3ff;
+}
+
+/* プライマリボタン */
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  font-weight: 600;
+  padding: 14px 28px;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* セカンダリボタン */
+.btn-secondary {
+  background: white;
+  color: #6366f1;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover {
+  border-color: #6366f1;
+  background: #f5f3ff;
+}
+
+/* 入力フィールド */
+.textarea-diary {
+  width: 100%;
+  min-height: 180px;
+  padding: 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  background: #fafaf9;
+  transition: all 0.3s ease;
+}
+
+.textarea-diary:focus {
+  border-color: #6366f1;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.textarea-diary::placeholder {
+  color: #9ca3af;
+}
+
+/* 分析セクション */
+.analysis-section {
+  background: linear-gradient(135deg, #f5f3ff 0%, #fdf4ff 50%, #fff1f2 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+/* 空状態 */
+.empty-state {
+  background: white;
+  border: 2px dashed #e5e7eb;
+  border-radius: 24px;
+  padding: 48px 24px;
+}
+
+.empty-state-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, #f5f3ff 0%, #fdf4ff 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b5cf6;
+}
+
+/* モーダル */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-width: 440px;
+  width: calc(100% - 32px);
+  margin: 16px;
+}
+
+/* APIキーバナー */
+.api-banner {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+  transition: all 0.3s ease;
+}
+
+.api-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4);
+}
+
+/* コメントセクション */
+.comments-section {
+  background: linear-gradient(to bottom, #fafaf9, #f5f5f4);
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  margin: 0 -24px -24px;
+  padding: 24px;
+  border-radius: 0 0 20px 20px;
+}
+
+/* スマホ対応 */
+@media (max-width: 640px) {
+  .diary-card {
+    border-radius: 16px;
+    margin: 0 -8px;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .persona-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .btn-primary {
+    padding: 12px 20px;
+    width: 100%;
+  }
+  
+  .textarea-diary {
+    min-height: 150px;
+    padding: 16px;
+    font-size: 1rem;
+  }
+  
+  .modal-content {
+    border-radius: 20px;
+    margin: 12px;
+  }
+  
+  .comments-section {
+    margin: 0 -16px -16px;
+    padding: 16px;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+/* タブレット対応 */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .diary-card {
+    border-radius: 20px;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }

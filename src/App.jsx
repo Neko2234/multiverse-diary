@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, PenTool, Trash2, Send, MessageCircle, Calendar, Edit3, Sparkles, BrainCircuit, Loader2, Key, Settings, LogOut, X } from 'lucide-react';
+import './App.css';
+import { BookOpen, PenTool, Trash2, Send, MessageCircle, Calendar, Edit3, Sparkles, BrainCircuit, Loader2, Key, Settings, LogOut, X, ChevronRight, Heart } from 'lucide-react';
 
 // --- Data & Logic Definition ---
 
 const PERSONAS = [
     { id: 'teacher', name: '田中先生', role: '先生', icon: '👨‍🏫', color: 'bg-green-100 text-green-800', desc: '優しく諭してくれる恩師。少し古風だが生徒思い。教育的指導を含めることが多い。' },
-    { id: 'friend', name: '親友のミカ', role: '架空の友達', icon: '👱‍♀️', color: 'bg-yellow-100 text-yellow-800', desc: 'いつも味方でいてくれる元気な友人。ギャル語混じりで、共感力が高い。テンションが高い。' },
-    { id: 'lover', name: '恋人', role: '恋人', icon: '🥰', color: 'bg-pink-100 text-pink-800', desc: '全肯定してくれる甘い存在。ユーザーのことが大好きで、少し過保護。キザなセリフも言う。' },
+    { id: 'friend', name: '親友のミカ', role: '友達', icon: '👱‍♀️', color: 'bg-yellow-100 text-yellow-800', desc: 'いつも味方でいてくれる元気な友人。ギャル語混じりで、共感力が高い。テンションが高い。' },
+    { id: 'lover', name: '恋人のユウタ', role: '恋人', icon: '🥰', color: 'bg-pink-100 text-pink-800', desc: '全肯定してくれる甘い存在。ユーザーのことが大好きで、少し過保護。キザなセリフも言う。' },
     { id: 'aunt', name: 'お節介な叔母さん', role: '親戚', icon: '👵', color: 'bg-orange-100 text-orange-800', desc: '心配性で現実的なアドバイスをくれる。健康や食事のことを気にする。口調は「〜だわよ」「〜しなさい」。' },
-    { id: 'celeb', name: 'カリスマRay', role: '有名人', icon: '😎', color: 'bg-purple-100 text-purple-800', desc: '少し上から目線だが、夢を語るスター。英語混じりのルー大柴的な口調。ポジティブで野心的。' },
+    { id: 'celeb', name: 'カリスマタレントRay', role: '有名人', icon: '😎', color: 'bg-purple-100 text-purple-800', desc: '少し上から目線だが、夢を語るスター。英語混じりのルー大柴的な口調。ポジティブで野心的。' },
     { id: 'isekai', name: '暗黒騎士ゼイド', role: '異世界人', icon: '🐉', color: 'bg-gray-800 text-gray-100', desc: '現代の常識が通じない、魔界の住人。ユーザーを「契約者」や「盟友」と呼ぶ。中二病的な言い回し。' },
 ];
 
@@ -120,62 +121,70 @@ const fetchGeminiAnalysis = async (apiKey, text) => {
 // --- Components ---
 
 const Avatar = ({ icon, className }) => (
-    <div className={`w-12 h-12 flex items-center justify-center rounded-full text-2xl shadow-sm ${className}`}>
+    <div className={`persona-avatar ${className}`}>
         {icon}
     </div>
 );
 
-const CommentCard = ({ persona, text }) => (
-    <div className="flex gap-3 mb-4 animate-fadeIn">
-        <Avatar icon={persona.icon} className={persona.color + " flex-shrink-0"} />
-        <div className="bg-white p-3 rounded-tr-xl rounded-br-xl rounded-bl-xl shadow-sm border border-gray-100 flex-1 relative group">
-            <div className="flex justify-between items-baseline mb-1">
-                <span className="font-bold text-sm text-gray-700">{persona.name}</span>
-                <span className="text-xs text-gray-400">{persona.role}</span>
+const CommentCard = ({ persona, text, index }) => (
+    <div 
+        className="flex gap-3 mb-4 animate-fadeIn"
+        style={{ animationDelay: `${index * 0.1}s` }}
+    >
+        <Avatar icon={persona.icon} className={persona.color} />
+        <div className="comment-bubble p-4 flex-1">
+            <div className="flex justify-between items-center mb-2">
+                <span className="font-semibold text-sm text-gray-800">{persona.name}</span>
+                <span className="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">{persona.role}</span>
             </div>
-            <p className="text-gray-800 text-sm leading-relaxed">{text}</p>
+            <p className="text-gray-700 text-sm leading-relaxed">{text}</p>
         </div>
     </div>
 );
 
 const AnalysisSection = ({ analysis, onClose }) => (
-    <div className="mt-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-5 border border-indigo-100 animate-fadeIn">
-        <div className="flex justify-between items-start mb-3">
-            <h4 className="font-bold text-indigo-900 flex items-center gap-2">
-                <Sparkles size={16} className="text-indigo-500" />
+    <div className="analysis-section mt-6 p-5 animate-scaleIn">
+        <div className="flex justify-between items-start mb-4">
+            <h4 className="font-bold text-gray-800 flex items-center gap-2">
+                <span className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
+                    <Sparkles size={16} className="text-white" />
+                </span>
                 AI 感情分析レポート
             </h4>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xs">閉じる</button>
+            <button 
+                onClick={onClose} 
+                className="text-gray-400 hover:text-gray-600 p-1 hover:bg-white/50 rounded-full transition-colors"
+            >
+                <X size={18} />
+            </button>
         </div>
         
-        <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="bg-white/60 p-3 rounded-lg">
-                <div className="text-xs text-indigo-600 font-bold mb-1">心の天気</div>
-                <div className="text-lg font-bold text-gray-800">{analysis.emotional_weather}</div>
+        <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-white/70 p-4 rounded-xl border border-white/50">
+                <div className="text-xs text-purple-600 font-semibold mb-1.5 uppercase tracking-wide">心の天気</div>
+                <div className="text-xl font-bold text-gray-800">{analysis.emotional_weather}</div>
             </div>
-            <div className="bg-white/60 p-3 rounded-lg">
-                <div className="text-xs text-indigo-600 font-bold mb-1">ムードスコア</div>
+            <div className="bg-white/70 p-4 rounded-xl border border-white/50">
+                <div className="text-xs text-purple-600 font-semibold mb-1.5 uppercase tracking-wide">ムードスコア</div>
                 <div className="flex items-end gap-1">
-                    <span className="text-2xl font-bold text-indigo-600">{analysis.mood_score}</span>
-                    <span className="text-xs text-gray-500 mb-1">/100</span>
+                    <span className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">{analysis.mood_score}</span>
+                    <span className="text-sm text-gray-400 mb-1">/100</span>
                 </div>
             </div>
         </div>
 
         <div className="space-y-3">
-            <div>
-                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">隠れた感情</div>
-                <p className="text-sm text-gray-800 bg-white/60 p-2 rounded">{analysis.hidden_emotions}</p>
+            <div className="bg-white/70 p-4 rounded-xl border border-white/50">
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">🔮 隠れた感情</div>
+                <p className="text-sm text-gray-700 leading-relaxed">{analysis.hidden_emotions}</p>
             </div>
-            <div>
-                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">ラッキーアクション</div>
-                <p className="text-sm text-gray-800 bg-white/60 p-2 rounded flex items-center gap-2">
-                    <span>🍀</span> {analysis.lucky_action}
-                </p>
+            <div className="bg-white/70 p-4 rounded-xl border border-white/50">
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">🍀 ラッキーアクション</div>
+                <p className="text-sm text-gray-700 leading-relaxed">{analysis.lucky_action}</p>
             </div>
-            <div>
-                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">深層アドバイス</div>
-                <p className="text-sm text-indigo-800 italic border-l-4 border-indigo-300 pl-3 py-1">
+            <div className="bg-gradient-to-r from-indigo-100/80 to-purple-100/80 p-4 rounded-xl">
+                <div className="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-2">✨ 深層アドバイス</div>
+                <p className="text-sm text-indigo-800 italic font-medium leading-relaxed">
                     "{analysis.deep_advice}"
                 </p>
             </div>
@@ -185,9 +194,9 @@ const AnalysisSection = ({ analysis, onClose }) => (
 
 const PersonaSelector = ({ selected, togglePersona }) => (
     <div className="mb-6">
-        <h3 className="text-sm font-bold text-gray-500 mb-2 flex items-center gap-2">
-            <MessageCircle size={16} />
-            誰からコメントをもらいますか？
+        <h3 className="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-2">
+            <MessageCircle size={16} className="text-indigo-500" />
+            誰からコメントをもらう？
         </h3>
         <div className="flex flex-wrap gap-2">
             {PERSONAS.map(p => {
@@ -196,13 +205,10 @@ const PersonaSelector = ({ selected, togglePersona }) => (
                     <button
                         key={p.id}
                         onClick={() => togglePersona(p.id)}
-                        className={`px-3 py-1.5 rounded-full text-sm border transition-all flex items-center gap-1
-                            ${isSelected 
-                                ? 'bg-blue-600 text-white border-blue-600 shadow-md transform scale-105' 
-                                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                        className={`persona-btn ${isSelected ? 'persona-btn-active' : 'persona-btn-inactive'}`}
                     >
-                        <span>{p.icon}</span>
-                        {p.role}
+                        <span className="text-base">{p.icon}</span>
+                        <span>{p.role}</span>
                     </button>
                 )
             })}
@@ -234,23 +240,29 @@ const EntryItem = ({ entry, onDelete, onUpdate, apiKey }) => {
     };
 
     return (
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6 transition-all hover:shadow-md">
-            <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
-                <span className="text-gray-400 text-sm font-mono flex items-center gap-1">
-                    <Calendar size={14} />
-                    {entry.date}
-                </span>
+        <div className="diary-card p-6 sm:p-8 mb-6 animate-slideUp">
+            {/* ヘッダー */}
+            <div className="flex justify-between items-center mb-5 pb-4 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
+                        <Calendar size={18} className="text-indigo-500" />
+                    </div>
+                    <div>
+                        <span className="text-gray-800 text-sm font-medium">{entry.date}</span>
+                    </div>
+                </div>
                 <button 
                     onClick={() => onDelete(entry.id)} 
-                    className="text-gray-300 hover:text-red-400 transition-colors p-1 rounded hover:bg-red-50"
+                    className="text-gray-300 hover:text-red-400 transition-colors p-2 rounded-xl hover:bg-red-50"
                     title="削除"
                 >
-                    <Trash2 size={16} />
+                    <Trash2 size={18} />
                 </button>
             </div>
             
+            {/* 本文 */}
             <div className="mb-6">
-                <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{entry.content}</p>
+                <p className="text-gray-800 whitespace-pre-wrap leading-relaxed text-base">{entry.content}</p>
             </div>
 
             {/* Analysis Button or Section */}
@@ -261,22 +273,23 @@ const EntryItem = ({ entry, onDelete, onUpdate, apiKey }) => {
                     <button 
                         onClick={handleAnalysis}
                         disabled={analyzing}
-                        className="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5"
+                        className="text-sm font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-xl transition-all flex items-center gap-2 hover:shadow-sm"
                     >
-                        {analyzing ? <Loader2 size={12} className="animate-spin" /> : <BrainCircuit size={14} />}
-                        {analyzing ? '分析中...' : 'AI感情分析を実行'}
+                        {analyzing ? <Loader2 size={16} className="animate-spin" /> : <BrainCircuit size={16} />}
+                        {analyzing ? '分析中...' : 'AI感情分析'}
                     </button>
                 </div>
             )}
 
-            <div className="space-y-4 border-t border-gray-100 pt-4 bg-gray-50 -mx-6 -mb-6 p-6 rounded-b-xl">
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-                    <MessageCircle size={12} />
-                    Comments (AI Powered)
+            {/* コメントセクション */}
+            <div className="comments-section">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <Heart size={14} className="text-pink-400" />
+                    みんなからのコメント
                 </h4>
                 {entry.comments.map((c, i) => {
                     const persona = PERSONAS.find(p => p.id === c.personaId);
-                    return persona ? <CommentCard key={i} persona={persona} text={c.text} /> : null;
+                    return persona ? <CommentCard key={i} persona={persona} text={c.text} index={i} /> : null;
                 })}
             </div>
         </div>
@@ -288,43 +301,63 @@ const ApiKeyModal = ({ savedKey, onSave, onCancel }) => {
     const [key, setKey] = useState(savedKey || "");
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                        <Key className="text-indigo-600" /> APIキーの設定
+        <div className="modal-overlay fixed inset-0 flex items-center justify-center z-50 p-4 animate-fadeIn">
+            <div className="modal-content p-6 sm:p-8">
+                <div className="flex justify-between items-center mb-5">
+                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-3">
+                        <span className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
+                            <Key className="text-white" size={20} />
+                        </span>
+                        APIキーの設定
                     </h2>
-                    <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
+                    <button 
+                        onClick={onCancel} 
+                        className="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-gray-100 transition-colors"
+                    >
                         <X size={20} />
                     </button>
                 </div>
-                <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                    AI機能（Gemini）を使用するために、Google AI StudioのAPIキーを入力してください。<br/>
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-600 underline hover:text-indigo-800">
-                        APIキーの取得はこちらから（無料）
-                    </a>
+                
+                <p className="text-sm text-gray-600 mb-5 leading-relaxed">
+                    AI機能（Gemini）を使用するために、Google AI StudioのAPIキーを入力してください。
                 </p>
+                
+                <a 
+                    href="https://aistudio.google.com/app/apikey" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex items-center gap-2 text-indigo-600 text-sm font-medium mb-5 hover:text-indigo-700 transition-colors"
+                >
+                    APIキーを取得（無料）
+                    <ChevronRight size={16} />
+                </a>
+                
                 <input
                     type="password"
                     value={key}
                     onChange={(e) => setKey(e.target.value)}
                     placeholder="AIzaSy..."
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none mb-4 font-mono text-sm"
+                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none mb-5 font-mono text-sm transition-all"
                 />
-                <div className="flex justify-end gap-3">
-                    <button onClick={onCancel} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg text-sm">
+                
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <button 
+                        onClick={onCancel} 
+                        className="btn-secondary order-2 sm:order-1 flex-1"
+                    >
                         キャンセル
                     </button>
                     <button 
                         onClick={() => onSave(key)} 
                         disabled={!key.trim()}
-                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold shadow hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="btn-primary order-1 sm:order-2 flex-1"
                     >
                         保存して開始
                     </button>
                 </div>
-                <p className="text-xs text-gray-400 mt-4 text-center">
-                    ※キーはブラウザにのみ保存され、外部サーバーには送信されません。
+                
+                <p className="text-xs text-gray-400 mt-5 text-center">
+                    🔒 キーはブラウザにのみ保存され、外部サーバーには送信されません
                 </p>
             </div>
         </div>
@@ -444,20 +477,27 @@ export default function App() {
     };
 
     return (
-        <div className="min-h-screen bg-[#f0f4f8] font-sans text-gray-900 pb-10">
+        <div className="min-h-screen pb-12">
             {/* Header */}
-            <header className="py-6 px-4 bg-white/80 sticky top-0 z-10 shadow-sm backdrop-blur-md">
+            <header className="app-header py-4 px-4 sm:py-5 sticky top-0 z-10">
                 <div className="max-w-2xl mx-auto flex justify-between items-center">
-                    <h1 className="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight flex items-center gap-2 cursor-pointer" onClick={() => setView('list')}>
-                        <span className="text-3xl">🌌</span> 
-                        <span className="hidden sm:inline">Multiverse Diary</span>
+                    <h1 
+                        className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2 sm:gap-3 cursor-pointer" 
+                        onClick={() => setView('list')}
+                    >
+                        <span className="text-2xl sm:text-3xl">🌌</span> 
+                        <span className="app-logo">Multiverse Diary</span>
                     </h1>
                     
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 sm:gap-3">
                          {/* Settings Button */}
                         <button 
                             onClick={() => setShowSettings(true)}
-                            className={`p-2 rounded-lg transition-colors ${apiKey ? 'text-gray-400 hover:text-gray-600' : 'text-indigo-600 bg-indigo-50 animate-pulse'}`}
+                            className={`p-2.5 rounded-xl transition-all ${
+                                apiKey 
+                                    ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100' 
+                                    : 'text-white bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg animate-pulse'
+                            }`}
                             title="APIキー設定"
                         >
                             <Settings size={20} />
@@ -466,16 +506,16 @@ export default function App() {
                         {view === 'list' && (
                             <button 
                                 onClick={() => setView('new')}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors text-sm font-bold flex items-center gap-2"
+                                className="btn-primary !py-2.5 !px-4 sm:!px-5"
                             >
-                                <PenTool size={16} />
-                                <span className="hidden sm:inline">書く</span>
+                                <PenTool size={18} />
+                                <span className="hidden sm:inline">日記を書く</span>
                             </button>
                         )}
                         {view === 'new' && (
                             <button 
                                 onClick={() => setView('list')}
-                                className="text-gray-500 hover:text-gray-700 px-4 py-2 text-sm font-medium"
+                                className="btn-secondary !py-2.5"
                             >
                                 キャンセル
                             </button>
@@ -484,28 +524,37 @@ export default function App() {
                 </div>
             </header>
 
-            <main className="max-w-2xl mx-auto p-4">
+            <main className="max-w-2xl mx-auto px-4 pt-6">
                 {/* Warning Banner if no Key */}
                 {!apiKey && view === 'list' && (
-                    <div onClick={() => setShowSettings(true)} className="bg-indigo-600 text-white p-4 rounded-xl shadow-lg mb-6 cursor-pointer hover:bg-indigo-700 transition-colors flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <Key className="animate-bounce" />
+                    <div 
+                        onClick={() => setShowSettings(true)} 
+                        className="api-banner text-white p-5 mb-8 cursor-pointer flex items-center justify-between gap-4"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                <Key size={24} />
+                            </div>
                             <div>
-                                <div className="font-bold">APIキーが設定されていません</div>
-                                <div className="text-xs text-indigo-200">ここをクリックしてGemini APIキーを設定してください</div>
+                                <div className="font-bold text-base">APIキーを設定しよう</div>
+                                <div className="text-sm text-white/80">タップしてGemini APIキーを入力</div>
                             </div>
                         </div>
+                        <ChevronRight size={24} className="text-white/60" />
                     </div>
                 )}
 
                 {/* New Entry View */}
                 {view === 'new' && (
-                    <div className="animate-fadeIn">
-                        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                            <label className="block text-gray-700 font-bold mb-2">今日の出来事は？</label>
+                    <div className="animate-slideUp">
+                        <div className="diary-card p-6 sm:p-8">
+                            <label className="block text-gray-800 font-semibold mb-4 text-lg flex items-center gap-2">
+                                <Edit3 size={20} className="text-indigo-500" />
+                                今日の出来事は？
+                            </label>
                             <textarea
-                                className="w-full h-40 p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none resize-none transition-all text-lg mb-6"
-                                placeholder="例：仕事で失敗しちゃったけど、ランチのパスタが美味しかった。"
+                                className="textarea-diary mb-6"
+                                placeholder="例：仕事で失敗しちゃったけど、ランチのパスタが美味しかった。&#10;&#10;嬉しかったこと、悲しかったこと、なんでもOK！"
                                 value={inputText}
                                 onChange={(e) => setInputText(e.target.value)}
                                 autoFocus
@@ -513,26 +562,21 @@ export default function App() {
                             
                             <PersonaSelector selected={selectedPersonas} togglePersona={togglePersona} />
 
-                            <div className="flex justify-end mt-8 border-t border-gray-100 pt-4">
+                            <div className="flex justify-end mt-8 pt-6 border-t border-gray-100">
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isWriting || !inputText.trim()}
-                                    className={`
-                                        px-6 py-3 rounded-lg font-bold shadow-md flex items-center gap-2 transition-all w-full sm:w-auto justify-center
-                                        ${isWriting || !inputText.trim() 
-                                            ? 'bg-gray-100 cursor-not-allowed text-gray-400 shadow-none' 
-                                            : 'bg-indigo-600 hover:bg-indigo-700 text-white transform hover:scale-105 active:scale-95'}
-                                    `}
+                                    className="btn-primary w-full sm:w-auto"
                                 >
                                     {isWriting ? (
-                                        <span className="flex items-center gap-2">
-                                            <Loader2 size={18} className="animate-spin" />
-                                            AIがコメントを生成中...
-                                        </span>
+                                        <>
+                                            <Loader2 size={20} className="animate-spin" />
+                                            <span>AIがコメント生成中...</span>
+                                        </>
                                     ) : (
                                         <>
-                                            <Sparkles size={18} />
-                                            保存してAIコメントをもらう
+                                            <Sparkles size={20} />
+                                            <span>保存してコメントをもらう</span>
                                         </>
                                     )}
                                 </button>
@@ -543,29 +587,41 @@ export default function App() {
 
                 {/* List View */}
                 {view === 'list' && (
-                    <div className="space-y-6">
+                    <div>
                         {entries.length === 0 ? (
-                            <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed border-gray-300 mx-4 sm:mx-0">
-                                <div className="text-gray-300 mb-4 flex justify-center">
-                                    <BookOpen size={64} strokeWidth={1} />
+                            <div className="empty-state text-center animate-fadeIn">
+                                <div className="empty-state-icon">
+                                    <BookOpen size={36} strokeWidth={1.5} />
                                 </div>
-                                <h2 className="text-xl font-bold text-gray-700 mb-2">まだ日記がありません</h2>
-                                <p className="text-gray-500 mb-6 text-sm">
+                                <h2 className="text-xl font-bold text-gray-800 mb-3">まだ日記がありません</h2>
+                                <p className="text-gray-500 mb-8 text-sm leading-relaxed max-w-xs mx-auto">
                                     今日あったことを書いて、<br/>
-                                    AIキャラクターたちからコメントをもらいましょう。
+                                    AIキャラクターたちからコメントをもらいましょう
                                 </p>
                                 <button 
                                     onClick={() => setView('new')}
-                                    className="bg-blue-100 text-blue-600 px-6 py-2 rounded-full font-bold hover:bg-blue-200 transition-colors inline-flex items-center gap-2"
+                                    className="btn-primary"
                                 >
-                                    <Edit3 size={16} />
+                                    <Edit3 size={18} />
                                     最初の日記を書く
                                 </button>
                             </div>
                         ) : (
-                            entries.map(entry => (
-                                <EntryItem key={entry.id} entry={entry} onDelete={handleDelete} onUpdate={handleUpdateEntry} apiKey={apiKey} />
-                            ))
+                            <div>
+                                {entries.map((entry, index) => (
+                                    <div 
+                                        key={entry.id} 
+                                        style={{ animationDelay: `${index * 0.1}s` }}
+                                    >
+                                        <EntryItem 
+                                            entry={entry} 
+                                            onDelete={handleDelete} 
+                                            onUpdate={handleUpdateEntry} 
+                                            apiKey={apiKey} 
+                                        />
+                                    </div>
+                                ))}
+                            </div>
                         )}
                     </div>
                 )}
@@ -576,19 +632,9 @@ export default function App() {
                 <ApiKeyModal 
                     savedKey={apiKey} 
                     onSave={handleSaveKey} 
-                    onCancel={() => setShowSettings(false)} // Always allow close
+                    onCancel={() => setShowSettings(false)}
                 />
             )}
-
-            <style>{`
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .animate-fadeIn {
-                    animation: fadeIn 0.4s ease-out forwards;
-                }
-            `}</style>
         </div>
     );
 }
