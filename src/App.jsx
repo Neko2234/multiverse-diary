@@ -70,7 +70,19 @@ const fetchGeminiPersonas = async (apiKey, text, selectedIds) => {
         if (!jsonText) throw new Error('No text generated');
         
         const parsed = JSON.parse(jsonText);
-        return parsed.responses; // Expecting array of {id, comment}
+        
+        // レスポンスの検証
+        if (!parsed.responses || !Array.isArray(parsed.responses)) {
+            throw new Error('Invalid response format');
+        }
+        
+        // 各レスポンスを検証・サニタイズ
+        return parsed.responses
+            .filter(r => r && typeof r.id === 'string' && typeof r.comment === 'string')
+            .map(r => ({
+                id: String(r.id).slice(0, 50),  // IDは50文字まで
+                comment: String(r.comment).slice(0, 500)  // コメントは500文字まで
+            }));
 
     } catch (error) {
         console.error("Gemini API Error (Personas):", error);
@@ -111,7 +123,16 @@ const fetchGeminiAnalysis = async (apiKey, text) => {
 
         const data = await response.json();
         const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        return JSON.parse(jsonText);
+        const parsed = JSON.parse(jsonText);
+        
+        // 必須フィールドの検証とサニタイズ
+        return {
+            mood_score: Math.min(100, Math.max(0, Number(parsed.mood_score) || 50)),
+            emotional_weather: String(parsed.emotional_weather || '不明').slice(0, 50),
+            hidden_emotions: String(parsed.hidden_emotions || '').slice(0, 300),
+            lucky_action: String(parsed.lucky_action || '').slice(0, 200),
+            deep_advice: String(parsed.deep_advice || '').slice(0, 300)
+        };
     } catch (error) {
         console.error("Gemini API Error (Analysis):", error);
         return null;
@@ -521,16 +542,28 @@ export default function App() {
             const savedEntries = localStorage.getItem('multiverse_diary_entries');
             if (savedEntries) {
                 const parsed = JSON.parse(savedEntries);
-                if (Array.isArray(parsed)) setEntries(parsed);
+                // 配列であること、各エントリが必要なプロパティを持つことを確認
+                if (Array.isArray(parsed)) {
+                    const validEntries = parsed.filter(entry => 
+                        entry && 
+                        typeof entry.id !== 'undefined' &&
+                        typeof entry.content === 'string' &&
+                        typeof entry.date === 'string' &&
+                        Array.isArray(entry.comments)
+                    );
+                    setEntries(validEntries);
+                }
             }
             
             // Load API Key
             const savedKey = localStorage.getItem('gemini_api_key');
-            if (savedKey) {
+            if (savedKey && typeof savedKey === 'string') {
                 setApiKey(savedKey);
             }
         } catch (e) {
             console.error("Failed to load data", e);
+            // 破損したデータをクリア
+            localStorage.removeItem('multiverse_diary_entries');
         }
         // 読み込み完了
         setIsLoaded(true);
@@ -710,12 +743,16 @@ export default function App() {
                                 今日の出来事は？
                             </label>
                             <textarea
-                                className="textarea-diary mb-6"
+                                className="textarea-diary mb-2"
                                 placeholder="例：仕事で失敗しちゃったけど、ランチのパスタが美味しかった。&#10;&#10;嬉しかったこと、悲しかったこと、なんでもOK！"
                                 value={inputText}
-                                onChange={(e) => setInputText(e.target.value)}
+                                onChange={(e) => setInputText(e.target.value.slice(0, 2000))}
+                                maxLength={2000}
                                 autoFocus
                             ></textarea>
+                            <div className="text-right text-sm text-gray-400 mb-4">
+                                {inputText.length} / 2000
+                            </div>
                             
                             <PersonaSelector selected={selectedPersonas} togglePersona={togglePersona} />
 
