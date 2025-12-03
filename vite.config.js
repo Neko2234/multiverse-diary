@@ -6,4 +6,8 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: '/multiverse-diary/',
+  server: {
+    port: 5173,
+    strictPort: false, // 5173が使用中なら次の空きポートを使う
+  }
 })
