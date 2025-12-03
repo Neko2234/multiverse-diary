@@ -1,16 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { BookOpen, PenTool, Trash2, Send, MessageCircle, Calendar, Edit3, Sparkles, BrainCircuit, Loader2, Key, Settings, LogOut, X, ChevronRight, Heart, AlertTriangle, Database, Download } from 'lucide-react';
+import { BookOpen, PenTool, Trash2, Send, MessageCircle, Calendar, Edit3, Sparkles, BrainCircuit, Loader2, Key, Settings, LogOut, X, ChevronRight, Heart, AlertTriangle, Database, Download, Plus, UserPlus, Users } from 'lucide-react';
 
 // --- Data & Logic Definition ---
 
-const PERSONAS = [
-    { id: 'teacher', name: '田中先生', role: '先生', icon: '👨‍🏫', color: 'bg-green-100 text-green-800', desc: '優しく諭してくれる恩師。少し古風だが生徒思い。教育的指導を含めることが多い。' },
-    { id: 'friend', name: '親友のミカ', role: '友達', icon: '👱‍♀️', color: 'bg-yellow-100 text-yellow-800', desc: 'いつも味方でいてくれる元気な友人。ギャル語混じりで、共感力が高い。テンションが高い。' },
-    { id: 'lover', name: '恋人のユウタ', role: '恋人', icon: '🥰', color: 'bg-pink-100 text-pink-800', desc: '全肯定してくれる甘い存在。ユーザーのことが大好きで、少し過保護。キザなセリフも言う。' },
-    { id: 'aunt', name: 'お節介な叔母さん', role: '親戚', icon: '👵', color: 'bg-orange-100 text-orange-800', desc: '心配性で現実的なアドバイスをくれる。健康や食事のことを気にする。口調は「〜だわよ」「〜しなさい」。' },
-    { id: 'celeb', name: 'カリスマタレントRay', role: '有名人', icon: '😎', color: 'bg-purple-100 text-purple-800', desc: '少し上から目線だが、夢を語るスター。英語混じりのルー大柴的な口調。ポジティブで野心的。' },
-    { id: 'isekai', name: '暗黒騎士ゼイド', role: '異世界人', icon: '🐉', color: 'bg-gray-800 text-gray-100', desc: '現代の常識が通じない、魔界の住人。ユーザーを「契約者」や「盟友」と呼ぶ。中二病的な言い回し。' },
+// デフォルトのペルソナ（削除不可）
+const DEFAULT_PERSONAS = [
+    { id: 'teacher', name: '田中先生', role: '先生', icon: '👨‍🏫', color: 'bg-green-100 text-green-800', desc: '優しく諭してくれる恩師。少し古風だが生徒思い。教育的指導を含めることが多い。', isDefault: true },
+    { id: 'friend', name: '親友のミカ', role: '友達', icon: '👱‍♀️', color: 'bg-yellow-100 text-yellow-800', desc: 'いつも味方でいてくれる元気な友人。ギャル語混じりで、共感力が高い。テンションが高い。', isDefault: true },
+    { id: 'lover', name: '恋人のユウタ', role: '恋人', icon: '🥰', color: 'bg-pink-100 text-pink-800', desc: '全肯定してくれる甘い存在。ユーザーのことが大好きで、少し過保護。キザなセリフも言う。', isDefault: true },
+    { id: 'aunt', name: 'お節介な叔母さん', role: '親戚', icon: '👵', color: 'bg-orange-100 text-orange-800', desc: '心配性で現実的なアドバイスをくれる。健康や食事のことを気にする。口調は「〜だわよ」「〜しなさい」。', isDefault: true },
+    { id: 'celeb', name: 'カリスマタレントRay', role: '有名人', icon: '😎', color: 'bg-purple-100 text-purple-800', desc: '少し上から目線だが、夢を語るスター。英語混じりのルー大柴的な口調。ポジティブで野心的。', isDefault: true },
+    { id: 'isekai', name: '暗黒騎士ゼイド', role: '異世界人', icon: '🐉', color: 'bg-gray-800 text-gray-100', desc: '現代の常識が通じない、魔界の住人。ユーザーを「契約者」や「盟友」と呼ぶ。中二病的な言い回し。', isDefault: true },
+];
+
+// 選択可能なアイコンリスト
+const AVAILABLE_ICONS = ['😀', '😎', '🥰', '😇', '🤗', '😈', '👨', '👩', '👴', '👵', '🧑‍🎤', '🧑‍💼', '🧑‍🔬', '🧑‍🎨', '🦸', '🧙', '🧛', '🧜', '🐱', '🐶', '🦊', '🐰', '🐻', '🐼', '🦁', '🐲', '👽', '🤖', '👻', '💀'];
+
+// 選択可能なカラーリスト
+const AVAILABLE_COLORS = [
+    { id: 'green', value: 'bg-green-100 text-green-800', label: '緑' },
+    { id: 'yellow', value: 'bg-yellow-100 text-yellow-800', label: '黄' },
+    { id: 'pink', value: 'bg-pink-100 text-pink-800', label: 'ピンク' },
+    { id: 'orange', value: 'bg-orange-100 text-orange-800', label: 'オレンジ' },
+    { id: 'purple', value: 'bg-purple-100 text-purple-800', label: '紫' },
+    { id: 'blue', value: 'bg-blue-100 text-blue-800', label: '青' },
+    { id: 'red', value: 'bg-red-100 text-red-800', label: '赤' },
+    { id: 'gray', value: 'bg-gray-800 text-gray-100', label: '黒' },
+    { id: 'indigo', value: 'bg-indigo-100 text-indigo-800', label: '藍' },
+    { id: 'teal', value: 'bg-teal-100 text-teal-800', label: 'ティール' },
 ];
 
 // Fallback logic (Local) for when API fails
@@ -36,8 +54,9 @@ const generateLocalResponse = (text, personaId) => {
 };
 
 // Gemini API Call for Personas
-const fetchGeminiPersonas = async (apiKey, text, selectedIds) => {
-    const selectedPersonas = PERSONAS.filter(p => selectedIds.includes(p.id));
+const fetchGeminiPersonas = async (apiKey, text, selectedIds, allPersonas) => {
+    const personaList = allPersonas || DEFAULT_PERSONAS;
+    const selectedPersonas = personaList.filter(p => selectedIds.includes(p.id));
     
     const systemPrompt = `
     You are a roleplay AI.
@@ -213,32 +232,206 @@ const AnalysisSection = ({ analysis, onClose }) => (
     </div>
 );
 
-const PersonaSelector = ({ selected, togglePersona }) => (
-    <div className="mb-8">
-        <h3 className="text-base font-semibold text-gray-700 mb-4 flex items-center gap-2">
-            <MessageCircle size={20} className="text-indigo-500" />
-            誰からコメントをもらう？
-        </h3>
-        <div className="flex flex-wrap gap-3">
-            {PERSONAS.map(p => {
-                const isSelected = selected.includes(p.id);
-                return (
-                    <button
-                        key={p.id}
-                        onClick={() => togglePersona(p.id)}
-                        className={`persona-btn ${isSelected ? 'persona-btn-active' : 'persona-btn-inactive'}`}
-                    >
-                        <span className="text-base">{p.icon}</span>
-                        <span>{p.role}</span>
-                    </button>
-                )
-            })}
+const PersonaSelector = ({ selected, togglePersona, personas, onShowAddModal }) => {
+    return (
+        <div className="mb-8">
+            <h3 className="text-base font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                <MessageCircle size={20} className="text-indigo-500" />
+                誰からコメントをもらう？
+            </h3>
+            <div className="flex flex-wrap gap-3">
+                {personas.map(p => {
+                    const isSelected = selected.includes(p.id);
+                    return (
+                        <button
+                            key={p.id}
+                            onClick={() => togglePersona(p.id)}
+                            className={`persona-btn ${isSelected ? 'persona-btn-active' : 'persona-btn-inactive'}`}
+                        >
+                            <span className="text-base">{p.icon}</span>
+                            <span>{p.role}</span>
+                        </button>
+                    )
+                })}
+                {/* 追加ボタン */}
+                <button
+                    onClick={onShowAddModal}
+                    className="persona-btn persona-btn-inactive !border-dashed !border-2"
+                    title="キャラクターを追加"
+                >
+                    <Plus size={18} />
+                    <span>追加</span>
+                </button>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
-const EntryItem = ({ entry, onDelete, onUpdate, apiKey }) => {
+// ペルソナ追加モーダル
+const AddPersonaModal = ({ onAdd, onCancel }) => {
+    const [name, setName] = useState('');
+    const [role, setRole] = useState('');
+    const [icon, setIcon] = useState('😀');
+    const [color, setColor] = useState(AVAILABLE_COLORS[0].value);
+    const [desc, setDesc] = useState('');
+
+    const handleSubmit = () => {
+        if (!name.trim() || !role.trim() || !desc.trim()) {
+            alert('すべての項目を入力してください');
+            return;
+        }
+        
+        const newPersona = {
+            id: `custom_${Date.now()}`,
+            name: name.trim().slice(0, 20),
+            role: role.trim().slice(0, 10),
+            icon,
+            color,
+            desc: desc.trim().slice(0, 200),
+            isDefault: false
+        };
+        
+        onAdd(newPersona);
+    };
+
+    return (
+        <div className="modal-overlay fixed inset-0 flex justify-center z-[100] p-4 pt-24 animate-fadeIn">
+            <div className="modal-content p-6 sm:p-8 mb-8 max-h-[85vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-3">
+                        <span className="w-10 h-10 bg-gradient-to-br from-pink-500 to-orange-500 rounded-xl flex items-center justify-center">
+                            <UserPlus className="text-white" size={20} />
+                        </span>
+                        キャラクターを追加
+                    </h2>
+                    <button 
+                        onClick={onCancel} 
+                        className="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-gray-100 transition-colors"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
+
+                {/* アイコン選択 */}
+                <div className="mb-5">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">アイコン</label>
+                    <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-xl max-h-32 overflow-y-auto">
+                        {AVAILABLE_ICONS.map(i => (
+                            <button
+                                key={i}
+                                onClick={() => setIcon(i)}
+                                className={`w-10 h-10 text-xl rounded-lg transition-all ${
+                                    icon === i 
+                                        ? 'bg-indigo-500 scale-110 shadow-lg' 
+                                        : 'bg-white hover:bg-gray-100'
+                                }`}
+                            >
+                                {i}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* カラー選択 */}
+                <div className="mb-5">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">テーマカラー</label>
+                    <div className="flex flex-wrap gap-2">
+                        {AVAILABLE_COLORS.map(c => (
+                            <button
+                                key={c.id}
+                                onClick={() => setColor(c.value)}
+                                className={`w-10 h-10 rounded-lg transition-all ${c.value} ${
+                                    color === c.value 
+                                        ? 'ring-2 ring-indigo-500 ring-offset-2 scale-110' 
+                                        : ''
+                                }`}
+                                title={c.label}
+                            >
+                                {icon}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* 名前 */}
+                <div className="mb-4">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">名前（20文字以内）</label>
+                    <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value.slice(0, 20))}
+                        placeholder="例：幼なじみのケン"
+                        className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all"
+                    />
+                </div>
+
+                {/* 役割 */}
+                <div className="mb-4">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">役割（10文字以内）</label>
+                    <input
+                        type="text"
+                        value={role}
+                        onChange={(e) => setRole(e.target.value.slice(0, 10))}
+                        placeholder="例：幼なじみ"
+                        className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all"
+                    />
+                </div>
+
+                {/* 性格・話し方 */}
+                <div className="mb-6">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        性格・話し方（200文字以内）
+                        <span className="font-normal text-gray-400 ml-2">※AIがこの設定に基づいてコメントします</span>
+                    </label>
+                    <textarea
+                        value={desc}
+                        onChange={(e) => setDesc(e.target.value.slice(0, 200))}
+                        placeholder="例：小さい頃からの付き合いで、遠慮なくツッコミを入れてくる。でも本当は優しい。関西弁で話す。"
+                        className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all h-24 resize-none"
+                    />
+                    <div className="text-right text-xs text-gray-400 mt-1">{desc.length}/200</div>
+                </div>
+
+                {/* プレビュー */}
+                <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+                    <div className="text-xs font-semibold text-gray-500 mb-2">プレビュー</div>
+                    <div className="flex items-center gap-3">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${color}`}>
+                            {icon}
+                        </div>
+                        <div>
+                            <div className="font-semibold text-gray-800">{name || '名前未設定'}</div>
+                            <div className="text-sm text-gray-500">{role || '役割未設定'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <button 
+                        onClick={onCancel} 
+                        className="btn-secondary order-2 sm:order-1 flex-1"
+                    >
+                        キャンセル
+                    </button>
+                    <button 
+                        onClick={handleSubmit}
+                        disabled={!name.trim() || !role.trim() || !desc.trim()}
+                        className="btn-primary order-1 sm:order-2 flex-1"
+                    >
+                        <UserPlus size={18} />
+                        追加する
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const EntryItem = ({ entry, onDelete, onUpdate, apiKey, allPersonas }) => {
     const [analyzing, setAnalyzing] = useState(false);
+    
+    // allPersonasが渡されない場合はデフォルトを使用（後方互換性）
+    const personas = allPersonas || DEFAULT_PERSONAS;
 
     const handleAnalysis = async () => {
         if (!apiKey) {
@@ -313,7 +506,7 @@ const EntryItem = ({ entry, onDelete, onUpdate, apiKey }) => {
                 </h4>
                 <div className="space-y-4">
                     {entry.comments.map((c, i) => {
-                        const persona = PERSONAS.find(p => p.id === c.personaId);
+                        const persona = personas.find(p => p.id === c.personaId);
                         return persona ? <CommentCard key={i} persona={persona} text={c.text} index={i} /> : null;
                     })}
                 </div>
@@ -323,10 +516,10 @@ const EntryItem = ({ entry, onDelete, onUpdate, apiKey }) => {
 };
 
 // --- Settings Modal ---
-const SettingsModal = ({ savedKey, onSave, onCancel, entriesCount, onClearAllData, onExportData }) => {
+const SettingsModal = ({ savedKey, onSave, onCancel, entriesCount, onClearAllData, onExportData, customPersonas, onDeleteCustomPersona }) => {
     const [key, setKey] = useState(savedKey || "");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [activeTab, setActiveTab] = useState('api'); // 'api' or 'data'
+    const [activeTab, setActiveTab] = useState('api'); // 'api', 'data', or 'personas'
 
     const handleClearData = () => {
         onClearAllData();
@@ -352,10 +545,10 @@ const SettingsModal = ({ savedKey, onSave, onCancel, entriesCount, onClearAllDat
                 </div>
 
                 {/* タブ */}
-                <div className="flex gap-2 mb-6 border-b border-gray-200">
+                <div className="flex gap-2 mb-6 border-b border-gray-200 overflow-x-auto">
                     <button 
                         onClick={() => setActiveTab('api')}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                             activeTab === 'api' 
                                 ? 'border-indigo-500 text-indigo-600' 
                                 : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -367,8 +560,21 @@ const SettingsModal = ({ savedKey, onSave, onCancel, entriesCount, onClearAllDat
                         </span>
                     </button>
                     <button 
+                        onClick={() => setActiveTab('personas')}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                            activeTab === 'personas' 
+                                ? 'border-indigo-500 text-indigo-600' 
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                    >
+                        <span className="flex items-center gap-2">
+                            <Users size={16} />
+                            キャラクター
+                        </span>
+                    </button>
+                    <button 
                         onClick={() => setActiveTab('data')}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                             activeTab === 'data' 
                                 ? 'border-indigo-500 text-indigo-600' 
                                 : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -425,6 +631,74 @@ const SettingsModal = ({ savedKey, onSave, onCancel, entriesCount, onClearAllDat
                         <p className="text-xs text-gray-400 mt-5 text-center">
                             🔒 キーはブラウザにのみ保存され、外部サーバーには送信されません
                         </p>
+                    </div>
+                )}
+
+                {/* キャラクター管理タブ */}
+                {activeTab === 'personas' && (
+                    <div className="animate-fadeIn">
+                        {/* デフォルトキャラクター */}
+                        <div className="mb-6">
+                            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                <Users size={16} className="text-indigo-500" />
+                                デフォルトキャラクター（{DEFAULT_PERSONAS.length}人）
+                            </h3>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                {DEFAULT_PERSONAS.map(p => (
+                                    <div key={p.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                                        <span className="text-lg">{p.icon}</span>
+                                        <div className="min-w-0">
+                                            <div className="text-sm font-medium text-gray-700 truncate">{p.name}</div>
+                                            <div className="text-xs text-gray-400 truncate">{p.role}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* カスタムキャラクター */}
+                        <div>
+                            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                <UserPlus size={16} className="text-pink-500" />
+                                追加したキャラクター（{customPersonas?.length || 0}人）
+                            </h3>
+                            {customPersonas && customPersonas.length > 0 ? (
+                                <div className="space-y-2">
+                                    {customPersonas.map(p => (
+                                        <div key={p.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0 ${p.color}`}>
+                                                    {p.icon}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <div className="text-sm font-medium text-gray-700 truncate">{p.name}</div>
+                                                    <div className="text-xs text-gray-400 truncate">{p.role}</div>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => onDeleteCustomPersona(p.id)}
+                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                                title="削除"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 text-gray-400">
+                                    <UserPlus size={32} className="mx-auto mb-2 opacity-50" />
+                                    <p className="text-sm">まだキャラクターを追加していません</p>
+                                    <p className="text-xs mt-1">日記作成画面の「＋追加」ボタンから追加できます</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mt-6 pt-4 border-t border-gray-100">
+                            <button onClick={onCancel} className="btn-secondary w-full">
+                                閉じる
+                            </button>
+                        </div>
                     </div>
                 )}
 
@@ -532,6 +806,15 @@ export default function App() {
     const [apiKey, setApiKey] = useState("");
     const [showSettings, setShowSettings] = useState(false);
     
+    // ペルソナ追加モーダル
+    const [showAddPersonaModal, setShowAddPersonaModal] = useState(false);
+    
+    // カスタムペルソナ
+    const [customPersonas, setCustomPersonas] = useState([]);
+    
+    // 全ペルソナ（デフォルト + カスタム）
+    const allPersonas = [...DEFAULT_PERSONAS, ...customPersonas];
+    
     // 初期読み込み完了フラグ
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -560,6 +843,22 @@ export default function App() {
             if (savedKey && typeof savedKey === 'string') {
                 setApiKey(savedKey);
             }
+            
+            // Load Custom Personas
+            const savedCustomPersonas = localStorage.getItem('multiverse_diary_custom_personas');
+            if (savedCustomPersonas) {
+                const parsed = JSON.parse(savedCustomPersonas);
+                if (Array.isArray(parsed)) {
+                    const validPersonas = parsed.filter(p =>
+                        p &&
+                        typeof p.id === 'string' &&
+                        typeof p.name === 'string' &&
+                        typeof p.role === 'string' &&
+                        typeof p.desc === 'string'
+                    );
+                    setCustomPersonas(validPersonas);
+                }
+            }
         } catch (e) {
             console.error("Failed to load data", e);
             // 破損したデータをクリア
@@ -576,6 +875,14 @@ export default function App() {
             localStorage.setItem('multiverse_diary_entries', JSON.stringify(entries));
         } catch (e) { console.error("Failed to save entries", e); }
     }, [entries, isLoaded]);
+    
+    // Save Custom Personas
+    useEffect(() => {
+        if (!isLoaded) return;
+        try {
+            localStorage.setItem('multiverse_diary_custom_personas', JSON.stringify(customPersonas));
+        } catch (e) { console.error("Failed to save custom personas", e); }
+    }, [customPersonas, isLoaded]);
 
     const handleSaveKey = (key) => {
         setApiKey(key);
@@ -583,12 +890,24 @@ export default function App() {
         setShowSettings(false);
     };
     
+    const handleAddCustomPersona = (newPersona) => {
+        setCustomPersonas(prev => [...prev, newPersona]);
+    };
+    
+    const handleDeleteCustomPersona = (personaId) => {
+        setCustomPersonas(prev => prev.filter(p => p.id !== personaId));
+        // 選択中なら選択解除
+        setSelectedPersonas(prev => prev.filter(id => id !== personaId));
+    };
+    
     const handleClearAllData = () => {
         // すべてのデータを削除
         localStorage.removeItem('multiverse_diary_entries');
         localStorage.removeItem('gemini_api_key');
+        localStorage.removeItem('multiverse_diary_custom_personas');
         setEntries([]);
         setApiKey("");
+        setCustomPersonas([]);
         setShowSettings(false);
     };
 
@@ -635,7 +954,7 @@ export default function App() {
         setIsWriting(true);
 
         // Fetch AI responses with the stored API Key
-        const aiResponses = await fetchGeminiPersonas(apiKey, inputText, selectedPersonas);
+        const aiResponses = await fetchGeminiPersonas(apiKey, inputText, selectedPersonas, allPersonas);
         
         const newComments = aiResponses.map(r => ({
             personaId: r.id,
@@ -754,7 +1073,12 @@ export default function App() {
                                 {inputText.length} / 2000
                             </div>
                             
-                            <PersonaSelector selected={selectedPersonas} togglePersona={togglePersona} />
+                            <PersonaSelector 
+                                selected={selectedPersonas} 
+                                togglePersona={togglePersona} 
+                                personas={allPersonas}
+                                onShowAddModal={() => setShowAddPersonaModal(true)}
+                            />
 
                             <div className="flex justify-end mt-8 pt-6 border-t border-gray-100">
                                 <button
@@ -811,7 +1135,8 @@ export default function App() {
                                             entry={entry} 
                                             onDelete={handleDelete} 
                                             onUpdate={handleUpdateEntry} 
-                                            apiKey={apiKey} 
+                                            apiKey={apiKey}
+                                            allPersonas={allPersonas}
                                         />
                                     </div>
                                 ))}
@@ -830,6 +1155,19 @@ export default function App() {
                     entriesCount={entries.length}
                     onClearAllData={handleClearAllData}
                     onExportData={handleExportData}
+                    customPersonas={customPersonas}
+                    onDeleteCustomPersona={handleDeleteCustomPersona}
+                />
+            )}
+
+            {/* ペルソナ追加モーダル */}
+            {showAddPersonaModal && (
+                <AddPersonaModal 
+                    onAdd={(newPersona) => {
+                        handleAddCustomPersona(newPersona);
+                        setShowAddPersonaModal(false);
+                    }}
+                    onCancel={() => setShowAddPersonaModal(false)}
                 />
             )}
         </div>
