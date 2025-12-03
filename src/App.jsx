@@ -385,14 +385,14 @@ export default function App() {
                         
                         <button 
                             onClick={() => setShowSettings(true)}
-                            className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl transition-all ${
-                                apiKey 
-                                    ? 'text-gray-400 hover:text-gray-600 hover:bg-gray-100' 
-                                    : 'text-white bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg animate-pulse'
-                            }`}
+                            className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl transition-all hover:bg-gray-100"
                             title="設定"
                         >
-                            <Settings size={20} className="sm:w-[22px] sm:h-[22px]" />
+                            <Settings 
+                                size={20} 
+                                className="sm:w-[22px] sm:h-[22px]"
+                                style={{ color: apiKey ? '#6366f1' : '#ef4444' }}
+                            />
                         </button>
 
                         {view === 'list' && (
