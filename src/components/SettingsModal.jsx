@@ -1,6 +1,105 @@
-import React, { useState } from 'react';
-import { Settings, Key, Database, Users, UserPlus, ChevronRight, Download, Trash2, AlertTriangle, X } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Settings, Key, Database, Users, UserPlus, ChevronRight, Download, Trash2, AlertTriangle, X, Eye, EyeOff, GripVertical } from 'lucide-react';
 import { DEFAULT_PERSONAS } from '../constants/personas';
+import { 
+    DndContext, 
+    closestCenter, 
+    KeyboardSensor, 
+    PointerSensor, 
+    TouchSensor,
+    useSensor, 
+    useSensors 
+} from '@dnd-kit/core';
+import { 
+    arrayMove, 
+    SortableContext, 
+    sortableKeyboardCoordinates, 
+    useSortable, 
+    verticalListSortingStrategy 
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// ドラッグ可能なペルソナアイテム
+const SortablePersonaItem = ({ persona, isHidden, isCustom, onToggleVisibility, onDelete }) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: persona.id });
+    
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        zIndex: isDragging ? 1000 : 'auto',
+    };
+    
+    return (
+        <div 
+            ref={setNodeRef}
+            style={style}
+            className={`flex items-center justify-between p-3 rounded-lg group transition-colors ${
+                isDragging ? 'bg-indigo-100 shadow-lg' : isHidden ? 'bg-gray-100 opacity-60' : 'bg-gray-50'
+            }`}
+        >
+            <div className="flex items-center gap-3 min-w-0">
+                {/* ドラッグハンドル */}
+                <button
+                    {...attributes}
+                    {...listeners}
+                    className="p-1 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing touch-none"
+                    title="ドラッグして並び替え"
+                >
+                    <GripVertical size={18} />
+                </button>
+                
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0 ${persona.color || 'bg-gray-200'}`}>
+                    {persona.icon}
+                </div>
+                <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                        <span className={`text-sm font-medium truncate ${isHidden ? 'text-gray-400' : 'text-gray-700'}`}>
+                            {persona.name}
+                        </span>
+                        {isCustom && (
+                            <span className="text-xs bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded">カスタム</span>
+                        )}
+                    </div>
+                    <div className="text-xs text-gray-400 truncate">{persona.role}</div>
+                </div>
+            </div>
+            
+            <div className="flex items-center gap-1">
+                {/* 表示/非表示ボタン */}
+                <button
+                    onClick={() => onToggleVisibility?.(persona.id)}
+                    className={`p-2 rounded-lg transition-colors ${
+                        isHidden 
+                            ? 'text-gray-400 hover:text-indigo-500 hover:bg-indigo-50' 
+                            : 'text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50'
+                    }`}
+                    title={isHidden ? '表示する' : '非表示にする'}
+                >
+                    {isHidden ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+                
+                {/* カスタムキャラクターのみ削除可能 */}
+                {isCustom && (
+                    <button
+                        onClick={() => onDelete(persona.id)}
+                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        title="削除"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+};
 
 export const SettingsModal = ({ 
     savedKey, 
@@ -10,11 +109,52 @@ export const SettingsModal = ({
     onClearAllData, 
     onExportData, 
     customPersonas, 
-    onDeleteCustomPersona 
+    onDeleteCustomPersona,
+    allPersonas,
+    hiddenPersonaIds,
+    onTogglePersonaVisibility,
+    onMovePersona,
+    onReorderPersonas
 }) => {
     const [key, setKey] = useState(savedKey || "");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [activeTab, setActiveTab] = useState('api'); // 'api', 'data', or 'personas'
+    
+    // ドラッグ＆ドロップのセンサー設定
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5, // 5px動かすとドラッグ開始
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 150, // スマホでは150ms長押しでドラッグ開始
+                tolerance: 5,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+    
+    // ペルソナのID配列を取得
+    const personaIds = useMemo(() => 
+        (allPersonas || [...DEFAULT_PERSONAS, ...(customPersonas || [])]).map(p => p.id),
+        [allPersonas, customPersonas]
+    );
+    
+    // ドラッグ終了時のハンドラ
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
+        
+        if (over && active.id !== over.id) {
+            const oldIndex = personaIds.indexOf(active.id);
+            const newIndex = personaIds.indexOf(over.id);
+            const newOrder = arrayMove(personaIds, oldIndex, newIndex);
+            onReorderPersonas?.(newOrder);
+        }
+    };
 
     const handleClearData = () => {
         onClearAllData();
@@ -132,61 +272,44 @@ export const SettingsModal = ({
                 {/* キャラクター管理タブ */}
                 {activeTab === 'personas' && (
                     <div className="animate-fadeIn">
-                        {/* デフォルトキャラクター */}
-                        <div className="mb-6">
-                            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                <Users size={16} className="text-indigo-500" />
-                                デフォルトキャラクター（{DEFAULT_PERSONAS.length}人）
-                            </h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                {DEFAULT_PERSONAS.map(p => (
-                                    <div key={p.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                                        <span className="text-lg">{p.icon}</span>
-                                        <div className="min-w-0">
-                                            <div className="text-sm font-medium text-gray-700 truncate">{p.name}</div>
-                                            <div className="text-xs text-gray-400 truncate">{p.role}</div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* カスタムキャラクター */}
-                        <div>
-                            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                <UserPlus size={16} className="text-pink-500" />
-                                追加したキャラクター（{customPersonas?.length || 0}人）
-                            </h3>
-                            {customPersonas && customPersonas.length > 0 ? (
-                                <div className="space-y-2">
-                                    {customPersonas.map(p => (
-                                        <div key={p.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group">
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0 ${p.color}`}>
-                                                    {p.icon}
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <div className="text-sm font-medium text-gray-700 truncate">{p.name}</div>
-                                                    <div className="text-xs text-gray-400 truncate">{p.role}</div>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={() => onDeleteCustomPersona(p.id)}
-                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                                                title="削除"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    ))}
+                        <p className="text-sm text-gray-500 mb-4">
+                            キャラクターをドラッグして並び替えたり、表示/非表示を切り替えられます。
+                        </p>
+                        
+                        {/* 全キャラクター一覧 - ドラッグ可能 */}
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEnd}
+                        >
+                            <SortableContext
+                                items={personaIds}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+                                    {(allPersonas || [...DEFAULT_PERSONAS, ...(customPersonas || [])]).map((p) => {
+                                        const isHidden = hiddenPersonaIds?.includes(p.id);
+                                        const isCustom = !p.isDefault;
+                                        
+                                        return (
+                                            <SortablePersonaItem
+                                                key={p.id}
+                                                persona={p}
+                                                isHidden={isHidden}
+                                                isCustom={isCustom}
+                                                onToggleVisibility={onTogglePersonaVisibility}
+                                                onDelete={onDeleteCustomPersona}
+                                            />
+                                        );
+                                    })}
                                 </div>
-                            ) : (
-                                <div className="text-center py-8 text-gray-400">
-                                    <UserPlus size={32} className="mx-auto mb-2 opacity-50" />
-                                    <p className="text-sm">まだキャラクターを追加していません</p>
-                                    <p className="text-xs mt-1">日記作成画面の「＋追加」ボタンから追加できます</p>
-                                </div>
-                            )}
+                            </SortableContext>
+                        </DndContext>
+                        
+                        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                            <p className="text-xs text-blue-600">
+                                💡 非表示にしたキャラクターは日記作成画面に表示されませんが、過去の日記のコメントはそのまま残ります。
+                            </p>
                         </div>
 
                         <div className="mt-6 pt-4 border-t border-gray-100">

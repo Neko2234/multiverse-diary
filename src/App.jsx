@@ -22,7 +22,7 @@ import {
 export default function App() {
     const [entries, setEntries] = useState([]);
     const [inputText, setInputText] = useState("");
-    const [selectedPersonas, setSelectedPersonas] = useState(['teacher', 'friend']);
+    const [selectedPersonas, setSelectedPersonas] = useState([]);
     const [isWriting, setIsWriting] = useState(false);
     const [view, setView] = useState('list'); // 'list' or 'new'
     
@@ -36,8 +36,23 @@ export default function App() {
     // カスタムペルソナ
     const [customPersonas, setCustomPersonas] = useState([]);
     
-    // 全ペルソナ（デフォルト + カスタム）
-    const allPersonas = [...DEFAULT_PERSONAS, ...customPersonas];
+    // 非表示ペルソナID（デフォルトペルソナ用）
+    const [hiddenPersonaIds, setHiddenPersonaIds] = useState([]);
+    
+    // ペルソナの表示順序（IDの配列）
+    const [personaOrder, setPersonaOrder] = useState([]);
+    
+    // 全ペルソナ（デフォルト + カスタム）を順序通りに並べる
+    const allPersonasRaw = [...DEFAULT_PERSONAS, ...customPersonas];
+    const allPersonas = personaOrder.length > 0
+        ? personaOrder
+            .map(id => allPersonasRaw.find(p => p.id === id))
+            .filter(Boolean)
+            .concat(allPersonasRaw.filter(p => !personaOrder.includes(p.id)))
+        : allPersonasRaw;
+    
+    // 表示用ペルソナ（非表示を除外）
+    const visiblePersonas = allPersonas.filter(p => !hiddenPersonaIds.includes(p.id));
     
     // 初期読み込み完了フラグ
     const [isLoaded, setIsLoaded] = useState(false);
@@ -82,6 +97,36 @@ export default function App() {
                     setCustomPersonas(validPersonas);
                 }
             }
+            
+            // Load Selected Personas (前回選択したペルソナ)
+            const savedSelectedPersonas = localStorage.getItem('multiverse_diary_selected_personas');
+            if (savedSelectedPersonas) {
+                const parsed = JSON.parse(savedSelectedPersonas);
+                if (Array.isArray(parsed)) {
+                    setSelectedPersonas(parsed);
+                }
+            } else {
+                // デフォルト選択
+                setSelectedPersonas(['teacher', 'friend']);
+            }
+            
+            // Load Hidden Persona IDs
+            const savedHiddenIds = localStorage.getItem('multiverse_diary_hidden_personas');
+            if (savedHiddenIds) {
+                const parsed = JSON.parse(savedHiddenIds);
+                if (Array.isArray(parsed)) {
+                    setHiddenPersonaIds(parsed);
+                }
+            }
+            
+            // Load Persona Order
+            const savedOrder = localStorage.getItem('multiverse_diary_persona_order');
+            if (savedOrder) {
+                const parsed = JSON.parse(savedOrder);
+                if (Array.isArray(parsed)) {
+                    setPersonaOrder(parsed);
+                }
+            }
         } catch (e) {
             console.error("Failed to load data", e);
             localStorage.removeItem('multiverse_diary_entries');
@@ -104,6 +149,30 @@ export default function App() {
             localStorage.setItem('multiverse_diary_custom_personas', JSON.stringify(customPersonas));
         } catch (e) { console.error("Failed to save custom personas", e); }
     }, [customPersonas, isLoaded]);
+    
+    // Save Selected Personas
+    useEffect(() => {
+        if (!isLoaded) return;
+        try {
+            localStorage.setItem('multiverse_diary_selected_personas', JSON.stringify(selectedPersonas));
+        } catch (e) { console.error("Failed to save selected personas", e); }
+    }, [selectedPersonas, isLoaded]);
+    
+    // Save Hidden Persona IDs
+    useEffect(() => {
+        if (!isLoaded) return;
+        try {
+            localStorage.setItem('multiverse_diary_hidden_personas', JSON.stringify(hiddenPersonaIds));
+        } catch (e) { console.error("Failed to save hidden personas", e); }
+    }, [hiddenPersonaIds, isLoaded]);
+    
+    // Save Persona Order
+    useEffect(() => {
+        if (!isLoaded) return;
+        try {
+            localStorage.setItem('multiverse_diary_persona_order', JSON.stringify(personaOrder));
+        } catch (e) { console.error("Failed to save persona order", e); }
+    }, [personaOrder, isLoaded]);
 
     const handleSaveKey = (key) => {
         setApiKey(key);
@@ -118,15 +187,54 @@ export default function App() {
     const handleDeleteCustomPersona = (personaId) => {
         setCustomPersonas(prev => prev.filter(p => p.id !== personaId));
         setSelectedPersonas(prev => prev.filter(id => id !== personaId));
+        setPersonaOrder(prev => prev.filter(id => id !== personaId));
+    };
+    
+    const handleTogglePersonaVisibility = (personaId) => {
+        setHiddenPersonaIds(prev => 
+            prev.includes(personaId) 
+                ? prev.filter(id => id !== personaId)
+                : [...prev, personaId]
+        );
+        // 非表示にしたペルソナは選択解除
+        if (!hiddenPersonaIds.includes(personaId)) {
+            setSelectedPersonas(prev => prev.filter(id => id !== personaId));
+        }
+    };
+    
+    const handleMovePersona = (personaId, direction) => {
+        const currentOrder = personaOrder.length > 0 
+            ? personaOrder 
+            : allPersonasRaw.map(p => p.id);
+        const index = currentOrder.indexOf(personaId);
+        if (index === -1) return;
+        
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+        if (newIndex < 0 || newIndex >= currentOrder.length) return;
+        
+        const newOrder = [...currentOrder];
+        [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
+        setPersonaOrder(newOrder);
+    };
+    
+    // ドラッグ＆ドロップによる並び替え
+    const handleReorderPersonas = (newOrderIds) => {
+        setPersonaOrder(newOrderIds);
     };
     
     const handleClearAllData = () => {
         localStorage.removeItem('multiverse_diary_entries');
         localStorage.removeItem('gemini_api_key');
         localStorage.removeItem('multiverse_diary_custom_personas');
+        localStorage.removeItem('multiverse_diary_selected_personas');
+        localStorage.removeItem('multiverse_diary_hidden_personas');
+        localStorage.removeItem('multiverse_diary_persona_order');
         setEntries([]);
         setApiKey("");
         setCustomPersonas([]);
+        setSelectedPersonas(['teacher', 'friend']);
+        setHiddenPersonaIds([]);
+        setPersonaOrder([]);
         setShowSettings(false);
     };
 
@@ -292,7 +400,7 @@ export default function App() {
                             <PersonaSelector 
                                 selected={selectedPersonas} 
                                 togglePersona={togglePersona} 
-                                personas={allPersonas}
+                                personas={visiblePersonas}
                                 onShowAddModal={() => setShowAddPersonaModal(true)}
                             />
 
@@ -373,6 +481,11 @@ export default function App() {
                     onExportData={handleExportData}
                     customPersonas={customPersonas}
                     onDeleteCustomPersona={handleDeleteCustomPersona}
+                    allPersonas={allPersonas}
+                    hiddenPersonaIds={hiddenPersonaIds}
+                    onTogglePersonaVisibility={handleTogglePersonaVisibility}
+                    onMovePersona={handleMovePersona}
+                    onReorderPersonas={handleReorderPersonas}
                 />
             )}
 
