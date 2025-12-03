@@ -1,23 +1,8 @@
 import React from 'react';
-import { Sparkles, X } from 'lucide-react';
+import { Sparkles, Trash2 } from 'lucide-react';
 
 export const AnalysisSection = ({ analysis, onClose }) => (
-    <div className="analysis-section mt-6 p-5 animate-scaleIn">
-        <div className="flex justify-between items-start mb-4">
-            <h4 className="font-bold text-gray-800 flex items-center gap-2">
-                <span className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
-                    <Sparkles size={16} className="text-white" />
-                </span>
-                AI 感情分析レポート
-            </h4>
-            <button 
-                onClick={onClose} 
-                className="text-gray-400 hover:text-gray-600 p-1 hover:bg-white/50 rounded-full transition-colors"
-            >
-                <X size={18} />
-            </button>
-        </div>
-        
+    <div className="analysis-section p-5 animate-scaleIn">
         <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-white/70 p-4 rounded-xl border border-white/50">
                 <div className="text-xs text-purple-600 font-semibold mb-1.5 uppercase tracking-wide">心の天気</div>
@@ -47,6 +32,17 @@ export const AnalysisSection = ({ analysis, onClose }) => (
                     "{analysis.deep_advice}"
                 </p>
             </div>
+        </div>
+        
+        {/* 分析結果を削除するボタン */}
+        <div className="flex justify-end mt-4">
+            <button 
+                onClick={onClose} 
+                className="text-xs text-gray-400 hover:text-red-500 flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+            >
+                <Trash2 size={14} />
+                分析結果を削除
+            </button>
         </div>
     </div>
 );
