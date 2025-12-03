@@ -18,8 +18,10 @@ import {
     updateSelectedPersonas,
     updateHiddenPersonaIds,
     updatePersonaOrder,
-    updateGeminiApiKey,
-    deleteUserData 
+    deleteUserData,
+    saveGeminiApiKeyLocal,
+    getGeminiApiKeyLocal,
+    removeGeminiApiKeyLocal
 } from './services/firestoreService';
 
 // Components
@@ -112,7 +114,8 @@ export default function App() {
                 setSelectedPersonas(data.selectedPersonas || ['teacher', 'friend']);
                 setHiddenPersonaIds(data.hiddenPersonaIds || []);
                 setPersonaOrder(data.personaOrder || []);
-                setApiKey(data.geminiApiKey || "");
+                // APIキーはローカルストレージから読み込み（セキュリティのため）
+                setApiKey(getGeminiApiKeyLocal());
             }
             setDataLoading(false);
         });
@@ -138,12 +141,10 @@ export default function App() {
         }
     };
 
-    // APIキーの保存
-    const handleSaveKey = async (key) => {
+    // APIキーの保存（ローカルストレージのみ、セキュリティのためFirestoreには保存しない）
+    const handleSaveKey = (key) => {
         setApiKey(key);
-        if (user) {
-            await updateGeminiApiKey(user.uid, key);
-        }
+        saveGeminiApiKeyLocal(key);
         setShowSettings(false);
     };
     
@@ -236,6 +237,8 @@ export default function App() {
         if (user) {
             await deleteUserData(user.uid);
         }
+        // ローカルストレージのAPIキーも削除
+        removeGeminiApiKeyLocal();
         setEntries([]);
         setApiKey("");
         setCustomPersonas([]);

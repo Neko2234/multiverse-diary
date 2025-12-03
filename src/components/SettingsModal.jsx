@@ -280,7 +280,7 @@ export const SettingsModal = ({
                         </div>
                         
                         <p className="text-xs text-gray-400 mt-5 text-center">
-                            🔒 キーはブラウザにのみ保存され、外部サーバーには送信されません
+                            🔒 APIキーはこのブラウザにのみ保存され、クラウドには送信されません
                         </p>
                     </div>
                 )}

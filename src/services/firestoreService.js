@@ -26,13 +26,13 @@ export const getUserData = async (userId) => {
             return { data: docSnap.data(), error: null };
         } else {
             // 新規ユーザーの場合、初期データを作成
+            // 注意: Gemini APIキーはセキュリティ上、ローカルストレージに保存（Firestoreには保存しない）
             const initialData = {
                 entries: [],
                 customPersonas: [],
                 selectedPersonas: ['teacher', 'friend'],
                 hiddenPersonaIds: [],
                 personaOrder: [],
-                geminiApiKey: "",
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
             };
@@ -136,18 +136,31 @@ export const updatePersonaOrder = async (userId, personaOrder) => {
     }
 };
 
-// Gemini APIキーを更新
-export const updateGeminiApiKey = async (userId, apiKey) => {
+// Gemini APIキーはセキュリティ上、ローカルストレージに保存（Firestoreには保存しない）
+export const saveGeminiApiKeyLocal = (apiKey) => {
     try {
-        const docRef = getUserDocRef(userId);
-        await updateDoc(docRef, { 
-            geminiApiKey: apiKey,
-            updatedAt: serverTimestamp()
-        });
+        localStorage.setItem('gemini_api_key', apiKey);
         return { error: null };
     } catch (error) {
-        console.error("Error updating API key:", error);
+        console.error("Error saving API key:", error);
         return { error: error.message };
+    }
+};
+
+export const getGeminiApiKeyLocal = () => {
+    try {
+        return localStorage.getItem('gemini_api_key') || "";
+    } catch (error) {
+        console.error("Error getting API key:", error);
+        return "";
+    }
+};
+
+export const removeGeminiApiKeyLocal = () => {
+    try {
+        localStorage.removeItem('gemini_api_key');
+    } catch (error) {
+        console.error("Error removing API key:", error);
     }
 };
 
