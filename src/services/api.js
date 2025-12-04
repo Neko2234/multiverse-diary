@@ -3,16 +3,16 @@ import { DEFAULT_PERSONAS } from '../constants/personas';
 // 利用可能なGeminiモデル
 export const GEMINI_MODELS = {
     flash: {
-        id: 'gemini-2.5-flash-preview-05-20',
+        id: 'gemini-2.5-flash',
         name: 'Gemini 2.5 Flash',
         description: '高速・高精度（推奨）',
-        endpoint: 'gemini-2.5-flash-preview-05-20'
+        endpoint: 'gemini-2.5-flash'
     },
     pro: {
-        id: 'gemini-2.5-pro-preview-06-05',
+        id: 'gemini-2.5-pro',
         name: 'Gemini 2.5 Pro', 
         description: '最高精度・無料枠小',
-        endpoint: 'gemini-2.5-pro-preview-06-05'
+        endpoint: 'gemini-2.5-pro'
     }
 };
 
